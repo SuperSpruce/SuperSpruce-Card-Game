@@ -1,0 +1,307 @@
+body {
+    font-family: helvetica, arial, sans-serif;
+    font-size: 16px;
+    margin: 2em;
+    color: #eeeeee;
+    background-color: #222222;
+  }
+
+
+#loadingScreen {
+    position: fixed;
+    overflow: auto;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    background-color: #333333;
+    font-size: 32px;
+    z-index: 1000;
+}
+
+.startNewGameButton {
+    height: 64px;
+    border-radius: 32px;
+    font-size: 32px;
+    padding: 0px 24px;
+    color: #111111;
+    background-color: #55dd44;
+    text-align: center;
+    margin: auto;
+    z-index: 5;
+}
+
+
+.playerstats {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.playerStatsLine {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    min-height: 32px;
+    overflow: visible;
+    padding: 2px 120px;
+    font-size: 20px;
+}
+
+.playerTitle {
+    position: relative;
+    width: 20%;
+    margin: 8px 24px;
+    font-weight: bold;
+}
+
+.playerstat {
+    position: relative;
+    width: 25%;
+    margin: 8px 24px;
+}
+
+#playerStatusText {
+    position: relative;
+    top: 6px;
+}
+
+.playerLives {
+    position: relative;
+    width: 20%;
+    font-weight: bold;
+}
+
+.zoneCount {
+    position: relative;
+    width: 20%;
+    font-weight: bold;
+}
+
+.playerHealthBar {
+    position: relative;
+    top: -4px;
+    width: 45%;
+    height: 20px;
+    border: 2px solid #888888;
+    border-radius: 4px;
+    margin: 8px 24px;
+    font-size: 20px;
+    background-color: #444444;
+}
+
+.playerHealthLevel {
+    position: relative;
+    height: 100%;
+    width: 50%;
+    background-color: #bbbb00;
+}
+
+.playerHealthReadout {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+
+.cardhand {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.shopSection {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 144px;
+}
+
+.card {
+    position: relative;
+    width: 88px;
+    height: 128px;
+    border: solid 4px #222222;
+    border-radius: 12px;
+    padding: 4px 0px;
+    margin: 16px 8px;
+    font-size: 12px;
+    color: #111111;
+    background-color: #cccccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.card:hover {
+    background-color: #eeeeee;
+    cursor: pointer;
+}
+
+.shopCard {
+    position: relative;
+    width: 88px;
+    height: 128px;
+    border: solid 4px #222222;
+    border-radius: 12px;
+    padding: 4px 0px;
+    margin: 16px 8px;
+    font-size: 12px;
+    color: #111111;
+    background-color: #ccccaa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.shopCard:hover {
+    background-color: #eeeecc;
+    cursor: pointer;
+}
+
+.cardpileL {
+    position: absolute;
+    top: 16px;
+    left: 32px;
+    width: 88px;
+    height: 128px;
+    z-index: 10;
+    border: none;
+    border-radius: 8px;
+    padding: 4px 0px;
+    margin: 16px 8px;
+    font-size: 21px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    color: #111111;
+    background-color: #cccccc;
+}
+.cardpileL:hover {
+    background-color: #eeeeee;
+    cursor: pointer;
+}
+
+.cardpileR {
+    position: absolute;
+    top: 16px;
+    right: 32px;
+    width: 88px;
+    height: 128px;
+    border: none;
+    border-radius: 8px;
+    padding: 4px 0px;
+    margin: 16px 8px;
+    font-size: 21px;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    color: #111111;
+    background-color: #cccccc;
+}
+
+.softcapped {
+    font-size: 12px;
+    color: #665577;
+}
+
+
+
+.villainSection {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.villain {
+    position: relative;
+    background-color: #442222;
+    border-radius: 24px;
+    width: 128px;
+    height: 208px;
+    margin: 16px 16px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.villainName {
+    font-size: 20px;
+}
+
+.villainLevel {
+    position: absolute;
+    bottom: 42%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.villainHealthBar {
+    position: absolute;
+    bottom: 23%;
+    left: -13px;
+    width: 80%;
+    height: 20px;
+    border: 2px solid #888888;
+    border-radius: 4px;
+    margin: 8px 24px;
+    font-size: 20px;
+    background-color: #444444;
+}
+
+.villainHealthLevel {
+    position: relative;
+    height: 100%;
+    width: 50%;
+    background-color: #bbbb00;
+}
+
+.villainHealthReadout {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.villainAttackButtons {
+    position: absolute;
+    bottom: 0%;
+    height: 48px;
+    width: 128px;
+    color: #111111;
+}
+
+.villainDamage1 {
+    position: absolute;
+    left: 0%;
+    height: 48px;
+    width: 64px;
+    border-radius: 24px;
+    font-size: 16px;
+    background-color: #cc9900;
+}
+.villainDamage1:hover {
+    background-color: #eebb00;
+    cursor: pointer;
+}
+
+.villainDamageMax {
+    position: absolute;
+    right: 0%;
+    height: 48px;
+    width: 64px;
+    border-radius: 24px;
+    font-size: 16px;
+    background-color: #cc9900;
+}
+.villainDamageMax:hover {
+    background-color: #eebb00;
+    cursor: pointer;
+}
