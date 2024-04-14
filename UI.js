@@ -51,12 +51,19 @@ function setCardAttributes(player, cardHTMLidNum, cardID) {
             player.playCard(cardHTMLidNum);
         };
     }
+
+    // Calculates if the card costs both elixir and money, or only requires one.
+    let costConj = "and";
+    if(cards[cardID][1] > 0 && cards[cardID][2] > 0) {
+        costConj = "or";
+    }
     
     // Sets the attributes to the values specified in the card array
     card.setAttribute("cid", cardID);
     card.setAttribute("cname", cards[cardID][0]);
-    card.setAttribute("cecost", cards[cardID][1]);
-    card.setAttribute("cmcost", cards[cardID][2]);
+    card.setAttribute("cecost", Math.abs(cards[cardID][1]));
+    card.setAttribute("cmcost", Math.abs(cards[cardID][2]));
+    card.setAttribute("cccost", costConj);
     card.setAttribute("ceffect", cards[cardID][5]);
 
     //Displays the card attributes
@@ -76,14 +83,12 @@ function displayCardAttributes(cardHTMLidNum, type = 0) {
   
     // Remove all existing text first
     card.innerHTML = "";
-    
-    // Create a paragraph element to hold the attributes
-    let attributeParagraph = document.createElement("p");
   
     // Get card attributes
     let name1 = card.getAttribute("cname");
     let mcost1 = card.getAttribute("cmcost");
     let ecost1 = card.getAttribute("cecost");
+    let conj1 = card.getAttribute("cccost");
     let effect1 = card.getAttribute("ceffect");
     
     // Create elements for each attribute
@@ -91,16 +96,18 @@ function displayCardAttributes(cardHTMLidNum, type = 0) {
     let effect = document.createElement("p");
     let mcost = document.createElement("p");
     let ecost = document.createElement("p");
+    let conj = document.createElement("p");
   
     // Set content for cost elements
     name.textContent = "\n" + name1;
     effect.textContent = effect1;
     mcost.textContent = "$" + mcost1;
     ecost.textContent = ecost1 + "e";
+    conj.textContent = conj1;
 
     // Add styles to elements (adjust as needed)
     name.style.position = "absolute";
-    name.style.top = "8px";
+    name.style.top = "12px";
     name.style.textAlign = "center";
     effect.style.position = "absolute";
     effect.style.top = "48px";
@@ -112,12 +119,18 @@ function displayCardAttributes(cardHTMLidNum, type = 0) {
     mcost.style.position = "absolute";
     mcost.style.top = "-8px";
     mcost.style.right = "2px";
+    conj.style.position = "absolute";
+    conj.style.top = "-8px";
+    conj.style.textAlign = "center";
+    if(conj1 == "and") conj.style.color = "#774444";
+    else conj.style.color = "#444477";
 
     // Append name, value, and suit elements to the card
     card.appendChild(ecost);
     card.appendChild(mcost);
     card.appendChild(name);
     card.appendChild(effect);
+    card.appendChild(conj);
 }
 
 
@@ -147,14 +160,45 @@ function removeCard(cardHTMLidNum) {
 
 
 
-function setPlayerHealthLevel(percentage) {
+function changeShopCardColors() {
+    let cardShop = document.getElementById("cardShop");
+    for(let i=0; i<shop.shopCardList.length; i++) {
+        if((p1._elixir >= cards[shop.shopCardList[i]][1] && cards[shop.shopCardList[i]][1] > 0) || (p1._money >= cards[shop.shopCardList[i]][2] && cards[shop.shopCardList[i]][2] > 0)) {
+            cardShop.querySelector(`#shopCard${i}`).style.backgroundColor = "#99ccaa";
+        }
+        else {
+            cardShop.querySelector(`#shopCard${i}`).style.backgroundColor = "#ccbbaa";
+        }
+    }
+    // Shop reroll buttons
+    let shopRerollButtonElixir = document.getElementById("shopRerollButtonElixir");
+    let shopRerollButtonMoney = document.getElementById("shopRerollButtonMoney");
+    document.getElementById("shopRerollCostElixir").innerHTML = Math.round(shop.rerollCostElixir);
+    document.getElementById("shopRerollCostMoney").innerHTML = Math.round(shop.rerollCostMoney);
+    if(p1._elixir >= Math.round(shop.rerollCostElixir))
+        shopRerollButtonElixir.style.backgroundColor = "#aacc99";
+    else
+        shopRerollButtonElixir.style.backgroundColor = "#cc9988";
+    if(p1._money >= Math.round(shop.rerollCostMoney))
+        shopRerollButtonMoney.style.backgroundColor = "#aacc99";
+    else
+        shopRerollButtonMoney.style.backgroundColor = "#cc9988";
+}
+
+
+
+function setPlayerHealthLevel(currentHealth, maxHealth) {
+    let percentage = 100*currentHealth/maxHealth;
     const healthLevelElement = document.getElementById("playerHealthLevel");
+    const playerCurrentHealthElement = document.getElementById("playerCurrentHealth");
+    const playerMaxHealthElement = document.getElementById("playerMaxHealth");
     // Scale the color components (Red to Green) based on the percentage
     const red = Math.min(255, -4 * percentage + 400);
     const green = Math.min(200, 4 * percentage);
     const blue = 0;
 
-    document.getElementById("playerCurrentHealth").innerHTML = Math.round(percentage/10);
+    playerCurrentHealthElement.innerHTML = currentHealth;
+    playerMaxHealthElement.innerHTML = maxHealth;
     healthLevelElement.style.width = percentage + "%";
     healthLevelElement.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
 }
@@ -318,4 +362,21 @@ function changeVillainLevelColor(villainNum, nLevel) {
     const green = Math.max(0, 238 - 3*(nLevel-1));
     const blue = Math.max(0, 238 - 15*(nLevel-1));
     levelText.style.color = `rgb(${red}, ${green}, ${blue})`;
+}
+
+function changeZoneLevelColor() {
+    const zoneText = document.getElementsByClassName("zoneCount")[0];
+    const red = Math.min(255, 155 + 10*(zone-1));
+    const green = Math.max(0, 238 - 3*(zone-1));
+    const blue = Math.max(0, 155 - 10*(zone-1));
+    zoneText.style.color = `rgb(${red}, ${green}, ${blue})`;
+}
+
+function changeLivesColor(player) {
+    const livesText = document.getElementsByClassName("playerLives")[0];
+    let ratio = (player._lives - 1) / (player._maxLives - 1);
+    const red = Math.min(255, Math.round(256*Math.sqrt(1-ratio)));
+    const green = Math.max(0, Math.round(238*ratio));
+    const blue = 0;
+    livesText.style.color = `rgb(${red}, ${green}, ${blue})`;
 }

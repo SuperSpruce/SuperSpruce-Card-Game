@@ -1,11 +1,14 @@
-var villainCSVdata = `Name:HP:Attack:Sp. Attack:Speed:Moves Levels:Move IDs:minZone:Reward
-Fire Crab:5:12:10:14:1,4,7,10:2,1,3,7:1:1c
-Snappy Snail:6:8:14:20:1,3,5,8:1,3,6,8:1:1m
-Squeally Squirrel:4:10:12:18:1,3,5,8:1,5,4,8:1:0.6x
-Spruce Needle:2.5:20:6:4:1:1:2:1a
-One-Leaf Clover:4:8:10:6:1,5:1,2:1:1h
-Three-Leaf Clover:6:12:12:8:1,5:1,2:3:0.9h/0.9m/0.6x
-Four-Leaf Clover:7:14:14:10:1,5:1,2:4:1.2h/1.2m/0.8x/1.2a
+var villainCSVdata = `Name:HP:Attack:Sp. Attack:Speed:Moves Levels:Move IDs:minZone:maxZone:Reward
+Fire Crab:5:12:10:14:1,4,7,10:2,1,3,7:1:29:1c
+Snappy Snail:6:8:14:20:1,3,5,8:1,3,6,8:1:15:1m
+Squeally Squirrel:4:10:12:18:1,3,5,8:1,5,4,8:1:15:0.8x
+Spruce Needle:2.5:20:6:4:1:1:2:34:1a
+One-Leaf Clover:4:8:10:6:1,5:1,2:1:13:1h
+Three-Leaf Clover:6:12:12:8:1,5,15:1,2,7:3:21:0.9h/0.9m/0.9x
+Four-Leaf Clover:7:14:14:10:1,5,15:1,2,7:4:99:1.2h/1.2m/1.2x/1.2a
+Evil Flower:5:10:15:10:1,4,6,10,20:1,11,9,10,12:7:999:0.6h0.6a
+Antimatter:10:5:10:5:1,9:1,15:6:299:-0.5h
+Five-Leaf Clover:8:16:16:15:1,5,15:1,2,7:8:199:1.5h/1.5m/1.5x/1.5a/1c
 `;
 
 
@@ -16,8 +19,15 @@ Tail Whip:T:-1sd:Normal
 Mean Look:T:1F:Ghost
 Growl:T:-1sa:Normal
 Drink:T:2hv:Water
-Bi-Attack:S:-1h1c:Fire
+Bi-Attack:S:-1h-0.5c:Fire
 Mud Shot:S:-1.4h:Ground
+Water Gun:P:0.8hv:Water
+Make It Rain:T:1hva:Water
+Flower Power:S:-1.5h#ef:Normal
+Deflower:P:-3h-0.5hv:Normal
+Triple Leaves:S:-1h-0.5c0.5hv:Grass
+Quad Leaves:S:-1sd-1sa-1h-0.5c:Grass
+Annihilate:P:-2hh-100hv:Normal
 `;
 
 var villainDex = [];
@@ -106,7 +116,7 @@ class Villain {
         for(let i=1; i<=numVillains; i++) {
             do {
                 r = Math.ceil(Math.random() * (villainDex.length-1));
-            } while (villainDex[r][7] > zone);
+            } while ((villainDex[r][7] > zone) || (villainDex[r][8] < zone));
             createVillainSlot(i, new Villain(r, 0));
             Villain.gainXP(i);
         }
@@ -134,26 +144,40 @@ class Villain {
             effectStr += "<br>";
         }
         document.getElementById("playerStatusText").innerHTML = effectStr;
+        p1._turnState = 1;
     }
 
 
     attack(position) {
-        // Selects a move
-        let r = Math.floor(Math.random() * 4);
-        while(this.moveset[r] == undefined) {
-            r = Math.floor(Math.random() * 4);
+        let validCase = false;
+        let moveID;
+        while(!validCase) {
+            // Selects a move
+            let r = Math.floor(Math.random() * 4);
+            while(this.moveset[r] == undefined) {
+                r = Math.floor(Math.random() * 4);
+            }
+
+            // Gets the effects of that move
+            moveID = this.moveset[r];
+
+            // Checks if the case is valid. Used for antimatter not annihilating prematurely.
+            if(moveID == 15 && this.turnsSurvived < 9) {
+                // Invalid use of move. Rerolling.
+            }
+            else {
+                validCase = true;
+            }
         }
 
-        // Gets the effects of that move
-        let moveID = this.moveset[r];
         let moveFX = getFXfromStr(moveDex[moveID][2]);
 
         // Makes an effect string
         let effectString = this.title;
         effectString += " used " + moveDex[moveID][0] + "!  ";
-
+        if(moveID > 9) console.log(moveFX[0]);
         // Applies the effects to the player
-        for(let i=0; i<moveFX.length; i++) {
+        for(let i=0; i<moveFX[0].length; i++) {
             // Applies modifiers to the effects
             if(moveDex[moveID][1] == "P")
                 moveFX[0][i].intensity *= (this.pattack * (2-p1._defenseStage)/2);
@@ -172,13 +196,13 @@ class Villain {
 
     static setXPScalingFactor() {
         if(zone < 5) {
-            return (1+0.1*Math.pow(zone-1, 2));
+            return (0.9+0.1*Math.pow(zone-1, 2));
         }
         else if(zone < 10) {
-            return 0.1*(zone+5);
+            return zone/6;
         }
         else {
-            return 0.2*(zone-5);
+            return (zone-6)/4;
         }
     }
 
@@ -188,7 +212,8 @@ class Villain {
         villainList[i].turnsSurvived += turns;
         villainList[i].attackPriority = 0;
         // The XP calculation part
-        let XPgain = Villain.setXPScalingFactor() * Math.pow(villainList[i].turnsSurvived, 1.3) * Math.pow(zone, 1.5);
+        let XPgain = Villain.setXPScalingFactor() * Math.pow(villainList[i].turnsSurvived, 1.3) * Math.pow(zone, 1.5+0.01*zone-0.05*pr.xv2);
+        XPgain *= Math.pow(0.95, pr.xv1);
         villainList[i].XP += XPgain;
         // Moveset stuff
         let prevLevel = villainList[i].level;
@@ -218,15 +243,7 @@ class Villain {
 
     resolveReward(num, choice = 0) {
         let dex = this.dex;
-        let FX = getFXfromStr(villainDex[dex][8]);
-        // Apply modifiers to the effect intensity based on level
-        for(let i=0; i<FX.length; i++) {
-            for(let j=0; j<FX[i].length; j++) { // Rounds the intensity to 2 decimal places
-                FX[i][j].intensity = (FX[i][j].intensity*(1 + 0.25*(this.level-1)*(1+Math.log(this.level)))).toFixed(2);
-            }
-        }
-        console.log(FX);
-        console.log(p1._turnState);
+        let FX = getFXfromStr(villainDex[dex][9]);
         let prevState = p1._turnState;
         // Select from multiple effects
         if(FX.length > 1 && (p1._turnState == 1 || p1._turnState == 0)) {
@@ -234,6 +251,9 @@ class Villain {
             line3.innerHTML = "Choose One:  ";
             p1._turnState = 3;
             for(let i=0; i<FX.length; i++) {
+                for(let j=0; j<FX[i].length; j++) { // Rounds the intensity to 2 decimal places
+                    FX[i][j].intensity = (FX[i][j].intensity*(1 + 0.5*Math.pow(this.level-1, 0.8))).toFixed(2);
+                }
                 // Show the choices to the user
                 let button = document.createElement("button");
                 button.style.height = "32px";
@@ -253,11 +273,20 @@ class Villain {
             }
             return "STOP";
         }
-        if(choice != -1) {
+        
+        if(choice == -1) {
+            return "GO";
+        }
+        else {
+            // Apply modifiers to the effect intensity based on level
+            for(let i=0; i<FX.length; i++) {
+                for(let j=0; j<FX[i].length; j++) { // Rounds the intensity to 2 decimal places
+                    FX[i][j].intensity = (FX[i][j].intensity*(1 + 0.5*Math.pow(this.level-1, 0.8))).toFixed(2);
+                }
+            }
             p1._turnState = prevState;
             let effectStr = p1.applyEffectsFromArray(FX,[0], choice);
             return effectStr;
         }
-        return "GO";
     }
 }

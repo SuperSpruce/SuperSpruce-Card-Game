@@ -7,7 +7,7 @@ Chess Titans Win:3:0:1:1:Gain 2 health. If you defeat a villain this turn, gain 
 Pkmn G1 W:2:0:1:1:Gain 1 elixir and 1 health.:1x1h
 Pkmn G1 T:3:0:1:1:Gain 1 attack and 1 health.:1a1h
 Pkmn G1 G:5:0:2:1:Gain 2 elixir and 2 health.:2x2h
-Pkmn G1 C:8:0:3:1:Gain 2 attack, 2 elixir, 2 health, and draw a card.:2a2x2h1c
+Pkmn G1 C:8:0:3:1:Gain 2 attack, 2 health, and draw a card.:2a2h1c
 CoC Clouds:0:0:0:0:Gain 1 money.:1m
 CoC Normal Battle:3:0:1:0.75:Gain 2 money.:2m
 CoC Pre-Builder Base Battle:2:0:1:0.5:Gain 1 attack. If this card is forcibly discarded, gain 1 elixir.:1a1xdf
@@ -22,9 +22,9 @@ Dry Out:0:4:1:0.5:Gain 2 elixir or 2 health.:2x/2h
 Base After Base:0:5:2:0.5:Gain 2 attack. If you defeat a villain this turn, gain 1 attack.:2a1awt
 Can’t Let Go:0:6:2:0.5:Draw a card. If you discard this card, draw a card.:1c1cd
 Jumper:0:7:2:0.5:Gain 2 money, or gain 1 attack.:2m/1a
-Time Machine:0:8:2:0.5:Gain 2 money and 1 elixir.:2m1x
+Time Machine:0:8:2:0.5:Gain 3 elixir.:3x
 Cycles:0:9:2:0.5:Gain 1 elixir, 1 money, and draw a card.:1x1m1c
-Xstep:0:9:2:0.5:Gain 3 elixir.:3x
+Xstep:0:9:2:0.5:Gain 2 money and 2 elixir.:2m2x
 Clutterfunk:0:11:2:0.5:Gain 3 elixir, or gain 1 attack, or gain 1 health.:3x/1a/1h
 Theory of Everything:0:10:2:0.5:Gain 1 money, 1 elixir, 1 health, and 1 attack.:1m1x1h1a
 Electroman Adventures:0:11:2:0.5:Gain 2 attack, or draw 2 cards.:2a/2c
@@ -39,12 +39,15 @@ Fingerdash:0:21:3:0.5:Gain 3 attack, and gain 2 health.:3a2h
 My Heart:4:6:2:0.5:Gain 3 health.:3h
 Frag Out:5:8:2:0.5:Gain 1 attack, and 1 elixir or 1 money.:1a1x/1a1m
 Multex Gravity:6:10:2:0.5:Gain 4 money.:4m
-Cold Blooded Love:5:8:2:0.5:Gain 2 attack, or gain 2 health.:2a/2h
+Cold Blooded Love:6:8:2:0.5:Gain 2 attack, or gain 2 health.:2a/2h
 Carol of the Bells:4:5:2:0.5:Gain 1 elixir and 2 health.:1x2h
 Give Me Candy:5:7:2:0.5:Gain 2 money and 1 health, or gain 2 elixir.:2m1h/2x
 King Taco:3:3:1:0.5:Gain 1 attack, or gain 2 elixir.:1a/2x
 Never Coming Down:7:14:2:0.5:Gain 3 attack.:3a
 Dash:0:22:3:0.5:Gain 3 attack, and gain 1 health or draw a card.:3a1h/3a1c
+Shootin Stars:6:9:2:0.5:Gain 3 money, or 1 money and 2 elixir.:3m/1m2x
+Holystone:7:13:3:0.5:Gain 2 attack. If this card is forcibly discarded, gain 2 attack.:2a2adf
+Hellcat:9:24:3:0.5:Gain 4 attack but lose 1 health, or gain 2 attack.:4a-1h/2a
 `;
 var cards = [];
 
@@ -101,6 +104,10 @@ function getFXfromStr(str) {
                 FXgroup.push(new Effect(params[0], params[1], params[2], params[3]));
                 params[0] = params[1] = params[2] = params[3] = 0;
             }
+        }
+        else if(str[i] == "#") {
+            state = 11;
+            i++;
         }
         else if(str[i] == "a" && state == 0) { // a for attack
             params[0] = 3;
@@ -164,9 +171,28 @@ function getFXfromStr(str) {
             params[3] = -3;
             state = 3;
         }
+        else if(str[i] == "h" && state == 1) { // hh for health per hitpoint of villain
+            params[0] = 18;
+            state = 2;
+        }
         else if(str[i] == "v" && state == 1) { // hv for heal villain
             params[0] = 14;
             state = 2;
+        }
+        else if(str[i] == "a" && state == 2) { // hva for heal all villains
+            params[0] = 15;
+            state = 2;
+        }
+        else if(str[i-1] == "e" && str[i] == "f" && state == 11) { // Special effect for the move Flower Power. Powers up by sqrt(#flowers)
+            let flowers = 0;
+            let vdex;
+            for(let j=1; j<villainList.length; j++) {
+                vdex = villainList[j].dex;
+                if(vdex == 8) 
+                    flowers++;
+            }
+            state = 1;
+            params[1] = (Number(str.substring(lastIndex, i-3))) * Math.sqrt(flowers);
         }
         else {
             console.log("ERROR! Invalid effect string! " + str[i] + " " + i + " " + str);
@@ -184,18 +210,57 @@ function getFXfromStr(str) {
 
 function addCardToShop(cardHTMLidNum) {
     // Sets min and max ranks for shop cards
-    drawnShopCards++;
+    shop.drawnShopCards++;
     let minRank = 1;
     let maxRank = 1;
-    if(drawnShopCards > 8) maxRank = 2;
-    if(drawnShopCards > 16) maxRank = 3;
+    if(shop.drawnShopCards > 8) maxRank = 2;
+    if(shop.drawnShopCards > 16) maxRank = 3;
     let r;
     // Selects a card based on rank
     do {
         r = Math.ceil(Math.random() * (cards.length-1));
     } while (cards[r][3] < minRank || cards[r][3] > maxRank || Math.random() > cards[r][4]);
     createCardSlot(0, cardHTMLidNum, r);
-    shopCardList[cardHTMLidNum] = r;
+    shop.shopCardList[cardHTMLidNum] = r;
+}
+
+
+function rerollShop(currency=0) {
+    // Check if eligible to reroll shop first
+    // Currency: 1 = elixir, 2 = money
+    if((currency == 1 && p1._elixir >= Math.round(shop.rerollCostElixir)) || (currency == 2 && p1._money >= Math.round(shop.rerollCostMoney))) {
+        console.log(currency);
+        if(currency == 1) {
+            p1._elixir -= Math.round(shop.rerollCostElixir);
+            document.getElementById("p1elixir").innerHTML = p1._elixir;
+        }
+        else if(currency == 2) {
+            p1._money -= Math.round(shop.rerollCostMoney);
+            document.getElementById("p1money").innerHTML = p1._money;
+        }
+        if(currency == 1 || pr.sru == 0) {
+            shop.rerollCostElixir += (20-pr.srr);
+            document.getElementById("shopRerollCostElixir").innerHTML = Math.round(shop.rerollCostElixir);
+        }
+        if(currency == 2 || pr.sru == 0) {
+            shop.rerollCostMoney += (20-pr.srr);
+            document.getElementById("shopRerollCostMoney").innerHTML = Math.round(shop.rerollCostMoney);
+        }
+    }
+    else if(currency != 0) {
+        return;
+    }
+
+    // The actual reroll part
+    let numCards = shop.shopCardList.length;
+    for(let i=0; i<numCards; i++) {
+        document.getElementById("shopCard" + i).remove();
+        shop.drawnShopCards--;
+    }
+    for(let i=0; i<numCards; i++) {
+        addCardToShop(i);
+    }
+    changeShopCardColors();
 }
 
 
@@ -266,26 +331,84 @@ function buyCard(cardHTMLidNum, cardID, currency = 0) {
         }
         return;
     }
-    else if(p1._elixir >= elixirCost || currency == 1) {  // Can afford card with elixir, buy it
+    else if(currency == 1 || (p1._elixir >= elixirCost && p1._money < moneyCost)) {  // Can afford card with elixir, buy it
         // Removes elixir from the player
         p1._elixir -= elixirCost;
         document.getElementById("p1elixir").innerHTML = p1._elixir;
         document.getElementById("playerStatusText").innerHTML = "You bought " + cards[cardID][0] + " for " + elixirCost + " elixir!";
     }
-    else if(p1._money >= moneyCost || currency == 2) {  // Can afford card with money, buy it
-        // Removes elixir from the player
+    else if(currency == 2 || (p1._money >= moneyCost && p1._elixir < elixirCost)) {  // Can afford card with money, buy it
+        // Removes money from the player
         p1._money -= moneyCost;
         document.getElementById("p1money").innerHTML = p1._money;
         document.getElementById("playerStatusText").innerHTML = "You bought " + cards[cardID][0] + " for " + moneyCost + " money!";
     }
     else return;
 
-    // Removes the card from the shop to be placed in player's discard
-    document.getElementById("shopCard" + cardHTMLidNum).remove();
-    p1._deck.discard.push(cardID);
+    // Removes the card from the shop to be placed in player's discard or hand
+    let prevTurnState = p1._turnState;
+    document.getElementById("shopCard" + cardHTMLidNum).style.border = "solid 4px #999999";
+    placeInHandOrDiscard(prevTurnState, card, cardHTMLidNum, cardID);
+}
 
-    // Adds a new card to the shop
-    addCardToShop(cardHTMLidNum);
+
+
+function placeInHandOrDiscard(prevTurnState, card, cardHTMLidNum, cardID, choice=0) {
+    let line3 = document.getElementById("playerStatusText");
+    // returns false to place in discard, or true to place in hand
+    if(p1._turnState == 7) {  // Select an option
+        p1._turnState = prevTurnState;
+        removeButtonsFromStatusLine();
+        card.style.border = "solid 4px #222222";
+        if(choice == 1) {
+            p1._deck.discard.push(cardID);
+            if(line3.innerText.charAt(line3.innerText.length-1) == ':') {
+                line3.innerText = line3.innerText.substring(0, line3.innerText.length-11);
+            }
+            line3.innerHTML += "<br>" + cards[cardID][0] + " was placed in your discard pile.";
+        }
+        else {
+            p1._shopCardsPlacedInHand--;
+            p1._deck.hand.push(cardID);
+            if(p1._turnState == 0) {
+                p1._turnState = 1;
+            }
+            line3.innerHTML = cards[cardID][0] + " was placed in your hand!";
+            createCardSlot(p1, p1._deck.hand.length, cardID);
+        }
+        // Adds a new card to the shop
+        document.getElementById("shopCard" + cardHTMLidNum).remove();
+        addCardToShop(cardHTMLidNum);
+        changeShopCardColors();
+    }
+    else if(p1._shopCardsPlacedInHand > 0) { // Display options
+        card.style.border = "solid 4px #999999";
+        line3.innerHTML += "<br>Choose One:  ";
+        p1._turnState = 7;
+        for(let i=0; i<2; i++) {
+            // Show the choices to the user
+            let button = document.createElement("button");
+            button.style.height = "32px";
+            button.style.borderRadius = "16px";
+            button.style.fontSize = "20px";
+            button.style.margin = "0px 8px";
+            button.style.color = "#111111";
+            button.style.backgroundColor = "#55dd44";
+            button.style.zIndex = "5";
+            if(i == 0) button.textContent += "Place card in hand (" + p1._shopCardsPlacedInHand + " remaining this game)";
+            if(i == 1) button.textContent += "Place card in discard";
+            // Set the function for the button
+            button.onclick = function() {
+                placeInHandOrDiscard(prevTurnState, card, cardHTMLidNum, cardID, i);
+            };
+            // Append the button to the line3 element
+            line3.appendChild(button);
+        }
+    }
+    else {
+        p1._turnState = 7;
+        placeInHandOrDiscard(prevTurnState, card, cardHTMLidNum, cardID, 1);
+    }
 }
 
 
@@ -324,85 +447,3 @@ fetch('CardData.csv')
     cardCSVdata = readCSV(csvContent);
   })
   .catch(error => console.error('Error fetching or parsing CSV file:', error));*/
-
-
-
-/*
-DEPRICATED: The description is now stored in the CSV file
-
-function getDescription(FX) {
-    let output = "";
-    let i = 0;
-    let a = [false, false, false, false];
-    let s = "";
-    let c = new Array(4).fill(0);
-
-    for(let b = 0; b < 4; b++) {
-        if(((FX[i][2] >> b) & 0x1) == 1) 
-            a[b] = true;
-    }
-
-    while(i < 4 && (i == 0 || FX[i-1][0] == 1)) {
-        let n = 4;
-        for(let j = 0; j < 4; j++) {
-            for(n; n < (11+7*j); n++) {
-                if(FX[i][n] != 0) {
-                    c[j]++;
-                }
-            }
-            if(c[j] != 0) {
-                if(j == 1) output += "If discarded, ";
-                if(j == 2) output += "If a Pokemon is defeated, ";
-                if(a[j] == false || FX[i][1] == 0) {
-                    output += "This player";
-                    s = "s";
-                }
-                else if(a[j] == true) {
-                    if(FX[i][1] < 0) {
-                        output += "The player " + -1*FX[i][1] + " before this player";
-                        s = "s";
-                    }
-                    else if(FX[i][1] < 11) {
-                        output += "The player " + FX[i][1] + " after this player";
-                        s = "s";
-                    }
-                    else if(FX[i][1] == 11) {
-                        output += "Any one player";
-                        s = "s";
-                    }
-                    else if(FX[i][1] < 20) {
-                        output += "Any " + (FX[i][1] - 10) + " players";
-                        s = "";
-                    }
-                    else {
-                        output += "All players ";
-                        s = "";
-                    }
-                }
-                if(FX[i][n-7] != 0) output += " gain" + s + " " + FX[i][n-7] + " elixir,";
-                if(FX[i][n-6] != 0) output += " gain" + s + " " + FX[i][n-6] + " money,";
-                if(FX[i][n-5] != 0) output += " gain" + s + " " + FX[i][n-5] + " attack,";
-                if(FX[i][n-4] != 0) output += " gain" + s + " " + FX[i][n-4] + " health,";
-                if(FX[i][n-3] != 0) output += " remove" + s + " " + (-1*FX[i][n-3]) + " from the location,";
-                if(FX[i][n-2] != 0) output += " draw" + s + " " + FX[i][n-2] + " cards,";
-                if(FX[i][n-1] != 0) {
-                    output += " banish"
-                    if(s == "s") output += "es";
-                    output += " " + FX[i][n-1] + " cards,";
-                }
-                output = output.slice(0, output.length - 1);
-                if(j == 3) {
-                    output += " for each"
-                    // Type crap
-                    output += " card played."
-                }
-                if(FX[i][0] == 1) 
-                    output += "; or\n";
-                else
-                    output += ".\n";
-            }
-        }
-        i++;
-    }
-    return output;
-}*/
