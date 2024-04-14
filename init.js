@@ -1,13 +1,18 @@
 // Initializes the game variables
 var numPlayers = 1;
-var p1 = new Player("Red");
+var p1;
+//p1 = new Player("Red");
 var zone = 1;
 var turnNum = 1;
-var drawnShopCards = 0;
 var villainList = [];
-var shopCardList = [];
 var fieldEffects = [];
 var highscores = [0, 0, 0, 0, 0];
+var shop = {
+    drawnShopCards: 0,
+    shopCardList: [],
+    rerollCostElixir: 99,
+    rerollCostMoney: 99
+};
 
 // Write saving code here
 function save() {
@@ -15,10 +20,10 @@ function save() {
         numPlayers: numPlayers,
         zone: zone,
         turnNum: turnNum,
-        drawnShopCards: drawnShopCards,
-        shopCardList: shopCardList,
         fieldEffects: fieldEffects,
         highscores: highscores,
+        shop: shop,
+        pr: pr,
         p1: p1.toJSON(),
         villainList: villainList.map(villain => (villain ? villain.toJSON() : null))
       };
@@ -46,10 +51,10 @@ function load(option = 0) {
         numPlayers = gameState.numPlayers;
         zone = gameState.zone;
         turnNum = gameState.turnNum;
-        drawnShopCards = gameState.drawnShopCards;
-        shopCardList = gameState.shopCardList;
         fieldEffects = gameState.fieldEffects;
         highscores = gameState.highscores;
+        shop = gameState.shop;
+        pr = gameState.pr;
         p1 = Player.fromJSON(gameState.p1);
         villainList = gameState.villainList.map(villainJSON => {
             if (villainJSON === null) {
@@ -57,6 +62,9 @@ function load(option = 0) {
             }
             return Villain.fromJSON(villainJSON);
         });
+
+        // Checks for missing variables
+        checkForMissingVariables();
 
         // Additional logic to initialize or update your game state
         if(p1._lives <= 0) {
@@ -86,8 +94,8 @@ function load(option = 0) {
         p1 = new Player("Red");
         zone = 1;
         turnNum = 1;
-        drawnShopCards = 0;
-        shopCardList = [];
+        shop.drawnShopCards = 0;
+        shop.shopCardList = [];
         fieldEffects = [];
         highscores = [0, 0, 0, 0, 0];
         Villain.setUpNew();
@@ -102,13 +110,39 @@ function load(option = 0) {
 
 
 
+function checkForMissingVariables() {
+    if(!pr) {
+        load(1);
+    }
+    else if(!pr.srb) {
+        pr.srb = 0;
+        pr.srd = 0;
+        pr.srr = 0;
+        pr.sru = 0;
+    }
+    else if(!pr.zsc_max) {
+        pr.zsc = 0;
+        pr.zsc_max = 0;
+    }
+}
+
+
+
 // Updates all UI elements
 function updateEverything() {
+    if(pr.tab == -1) {
+        document.getElementById("prestigeScreen").style.display = "none";
+    }
+    else if(pr.tab == -2) {
+        document.getElementById("prestigeScreen").style.display = "none";
+    }
+
     if(p1._turnState == 0) {
         document.getElementById("playerStatusText").innerHTML = "Draw your initial hand.";
         p1._cardsToDraw = p1._initialCards;
     }
 
+    document.getElementById("turnText").innerHTML = turnNum;
     document.getElementById("zoneText").innerHTML = zone;
     document.getElementById("p1lives").innerHTML = p1._lives;
     document.getElementById("p1score").innerHTML = p1._score;
@@ -117,7 +151,9 @@ function updateEverything() {
     document.getElementById("p1attack").innerHTML = p1._attack;
     document.getElementById("playerAvailableCards").innerHTML = p1._cardsToDraw;
 
-    setPlayerHealthLevel(100 * p1._health / p1._maxHealth);
+    setPlayerHealthLevel(p1._health, p1._maxHealth);
+    changeLivesColor(p1);
+    changeZoneLevelColor();
 
     // Player cards
     let i;
@@ -140,12 +176,24 @@ function updateEverything() {
         i++;
     }*/
     // Shop cards
-    for(i=0; i<shopCardList.length; i++) {
+    for(i=0; i<shop.shopCardList.length; i++) {
         if(document.getElementById("shopCard" + i) == null) {
-            createCardSlot(0, i, shopCardList[i]);
+            createCardSlot(0, i, shop.shopCardList[i]);
         }
-        setCardAttributes(0, i, shopCardList[i]);
+        setCardAttributes(0, i, shop.shopCardList[i]);
     }
+    if(pr.rx1 == 0)
+        document.getElementById("shopRerollButtonElixir").style.visibility = "hidden";
+    else
+        document.getElementById("shopRerollButtonElixir").style.visibility = "visible";
+    if(pr.rm1 == 0)
+        document.getElementById("shopRerollButtonMoney").style.visibility = "hidden";
+    else
+        document.getElementById("shopRerollButtonMoney").style.visibility = "visible";
+    document.getElementById("shopRerollCostElixir").innerHTML = shop.rerollCostElixir;
+    document.getElementById("shopRerollCostMoney").innerHTML = shop.rerollCostMoney;
+    changeShopCardColors();
+
     // Villain attributes
     let villainSlots = document.getElementsByClassName("villain");
     for(i=0; i<villainSlots.length; i++) {
@@ -154,20 +202,58 @@ function updateEverything() {
     for(i=1; i<villainList.length; i++) {
         createVillainSlot(i, villainList[i]);
     }
+    flashAttackButtons();
+    flashDrawPile();
 }
 
 
 // Function to start a new game. Does not reset prestige currency or highscores.
 function softReset() {
-    let temp = highscores;
+    console.log("Notice: You are loading a new round.");
+    // Removes existing cards, because we want a fresh start
+    let cardhand = document.getElementById("mainCardHand");
+    let handCards = cardhand.getElementsByClassName("card");
+    let numHandCards = handCards.length;
+    for(let i=0; i<numHandCards; i++) {
+        cardhand.removeChild(handCards[0]);
+    }
+    let shopElement = document.getElementById("cardShop");
+    let shopCards = shopElement.getElementsByClassName("shopCard");
+    let numShopCards = shopCards.length;
+    for(let i=0; i<numShopCards; i++) {
+        shopElement.removeChild(shopCards[0]);
+    }
     // Takes number of villains down to 2
+    let villains = document.getElementsByClassName("villain");
+    let villainSection = document.getElementById("villainSection");
     while(villainList.length > 3) {
         villainList.pop();
+        villainSection.removeChild(villains[villainList.length-1]);
     }
-    localStorage.removeItem('gameState');
+    // Goes to the game screen
+    pr.tab = -1;
+    // Initializes a new round
+    p1 = new Player("Red");
+    zone = 1+pr.zsc;
+    turnNum = 0;
+    shop.drawnShopCards = 0;
+    shop.shopCardList = [];
+    shop.rerollCostElixir = 6-pr.srb;
+    shop.rerollCostMoney = 6-pr.srb;
+    fieldEffects = [];
+    Villain.setUpNew();
+    for(let i=0; i<4+pr.sc1; i++) {
+        addCardToShop(i);
+    }
+    p1._elixir = 0;
+    p1._money = 0;
+    p1._attack = 0;
+    p1._cardsToDraw = stochasticRound(p1._initialCards);
+    p1._shopCardsPlacedInHand = pr.sb1;
+    document.getElementById("gameScreen").style.display = "block";
     document.getElementById("loadingScreen").style.display = "none";
-    load(2);
-    highscores = temp;
+    document.getElementById("prestigeScreen").style.display = "none";
+    updateEverything();
     save();
 }
 

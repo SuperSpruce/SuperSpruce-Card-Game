@@ -7,6 +7,43 @@ body {
   }
 
 
+
+.font20 {
+    font-size: 20px;
+}
+
+.small-button {
+    height: 32px;
+    border-radius: 16px;
+    font-size: 20px;
+    padding: 0px 8px;
+    text-align: center;
+}
+.small-button:hover {
+    cursor: pointer;
+}
+.medium-button {
+    height: 48px;
+    border-radius: 24px;
+    font-size: 24px;
+    padding: 0px 16px;
+    text-align: center;
+}
+.large-button {
+    height: 64px;
+    border-radius: 32px;
+    font-size: 32px;
+    padding: 0px 24px;
+    text-align: center;
+}
+
+
+.fullWidthSlider {
+    width: 100%;
+}
+
+
+
 #loadingScreen {
     position: fixed;
     overflow: auto;
@@ -22,8 +59,29 @@ body {
     font-size: 32px;
     z-index: 1000;
 }
+#loadingText {
+    width: 100%;
+    font-weight: bold;
+}
+
+#prestigeScreen {
+    position: fixed;
+    overflow: auto;
+    padding: 16px 24px;
+    top: 0;
+    left: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    background-color: #333333;
+    font-size: 14px;
+    z-index: 500;
+}
 
 .startNewGameButton {
+    visibility: hidden;
     height: 64px;
     border-radius: 32px;
     font-size: 32px;
@@ -34,25 +92,198 @@ body {
     margin: auto;
     z-index: 5;
 }
+.startNewGameButton:hover {
+    background-color: #66ee55;
+    cursor: pointer;
+}
 
+.prestigeAccessButton {
+    visibility: hidden;
+    height: 64px;
+    border-radius: 32px;
+    font-size: 32px;
+    padding: 0px 24px;
+    color: #111111;
+    background-color: #4455dd;
+    text-align: center;
+    margin: auto;
+    z-index: 5;
+}
+.prestigeAccessButton:hover {
+    background-color: #5566ee;
+    cursor: pointer;
+}
 
-.playerstats {
+.prestigeTabButtons {
     display: flex;
     flex-wrap: wrap;
+}
+
+.prestigeTabButton {
+    border: 4px solid #444444;
+    padding: 8px 20px;
+    margin: 0px -2px;
+    font-size: 20px;
+    font-weight: bold;
+    transform: skew(-10deg);
+    color: #111111;
+    background-color: #cccccc;
+}
+.prestigeTabButton:hover {
+    background-color: #eeeeee;
+    cursor: pointer;
+}
+
+
+.prestigeCurrenciesDisplay {
+    font-size: 24px;
+    display: flex;
+}
+
+.prestigeCurrencyDisplay {
+    width: 30%;
+    margin: 16px;
+}
+
+
+.prestigeTab {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 308px);
+    padding: 24px 0px;
+}
+
+.upgrade {
+    height: 192px;
+    width: 288px;
+    padding: 16px 8px;
+    border: 4px solid #aaaaaa;
+    margin: 0px -4px -4px -4px;
+    color: #111111;
+    background-color: #aacc77;
+}
+.upgrade:hover {
+    cursor: pointer;
+}
+
+
+.resourceSelection {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 33.3%);
+    padding: 24px 0px;
+}
+.resourceSelection2 {
+    font-size: 60px;
+}
+
+.proportionSelection {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 20%);
+    padding: 24px 0px;
+}
+
+.proportionSelectionUnit {
+    height: 96px;
+    font-size: 16px;
+    padding: 16px 8px;
+    border: 4px solid #aaaaaa;
+    margin: -4px;
+    color: #111111;
+    background-color: #cc5555;
+}
+.proportionSelectionUnit:hover {
+    cursor: pointer;
+}
+
+.rubySelect1 {
+    background-color: #662222;
+}
+.rubySelect2 {
+    background-color: #aa4f4f;
+}
+.rubySelect3 {
+    background-color: #ff7777;
+}
+.rubySelect2:hover {
+    cursor: pointer;
+    background-color: #cc4444;
+}
+
+.sapphireSelect1 {
+    background-color: #333366;
+}
+.sapphireSelect2 {
+    background-color: #6060aa;
+}
+.sapphireSelect3 {
+    background-color: #9999ff;
+}
+.sapphireSelect2:hover {
+    cursor: pointer;
+    background-color: #7070cc;
+}
+
+.emeraldSelect1 {
+    background-color: #114411;
+}
+.emeraldSelect2 {
+    background-color: #338833;
+}
+.emeraldSelect3 {
+    background-color: #66ff66;
+}
+.emeraldSelect2:hover {
+    cursor: pointer;
+    background-color: #44bb44;
+}
+
+
+
+
+
+.gameScreen {
+    display: flex;
+    flex-direction: column;
+}
+.playerallstats {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: max-content;
+}
+.playermainstats {
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
 }
 
 .playerStatsLine {
     position: relative;
     display: flex;
-    justify-content: center;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
     width: 100%;
     min-height: 32px;
+    height: auto;
     overflow: visible;
     padding: 2px 120px;
     font-size: 20px;
 }
 
+@media (max-width: 600px) {
+    .playermainstats {
+        padding-top: 180px;
+        min-height: 100px;
+    }
+    .playerStatsLine {
+        padding: 2px 8px;
+    }
+    .playerStatusText {
+        margin-bottom: 32px;
+    }
+}
+
 .playerTitle {
+    display: inline-block;
     position: relative;
     width: 20%;
     margin: 8px 24px;
@@ -60,36 +291,52 @@ body {
 }
 
 .playerstat {
+    display: inline-block;
     position: relative;
-    width: 25%;
-    margin: 8px 24px;
+    margin: 8px 16px;
+    text-align: center;
 }
 
-#playerStatusText {
+.playerStatusText {
     position: relative;
-    top: 6px;
+    top: 32px;
+    min-height: 48px;
+    height: auto;
+    width: 100%;
+    padding: 16px;
+    font-size: 20px;
+    text-align: center;
 }
 
 .playerLives {
+    display: inline-block;
     position: relative;
-    width: 20%;
+    margin: 8px 16px;
     font-weight: bold;
 }
 
-.zoneCount {
+.turnCount {
+    display: inline-block;
     position: relative;
-    width: 20%;
+    margin: 8px 16px;
+}
+
+.zoneCount {
+    display: inline-block;
+    position: relative;
+    margin: 8px 16px;
     font-weight: bold;
 }
 
 .playerHealthBar {
+    display: inline-block;
     position: relative;
     top: -4px;
-    width: 45%;
+    width: 40%;
     height: 20px;
     border: 2px solid #888888;
     border-radius: 4px;
-    margin: 8px 24px;
+    margin: 8px 16px;
     font-size: 20px;
     background-color: #444444;
 }
@@ -112,6 +359,12 @@ body {
 }
 
 
+
+.cardsAndVillains {
+    position: relative;
+    top: 100%;
+}
+
 .cardhand {
     display: flex;
     flex-wrap: wrap;
@@ -127,10 +380,10 @@ body {
 .card {
     position: relative;
     width: 88px;
-    height: 128px;
+    height: 144px;
     border: solid 4px #222222;
     border-radius: 12px;
-    padding: 4px 0px;
+    padding: 4px 4px;
     margin: 16px 8px;
     font-size: 12px;
     color: #111111;
@@ -147,10 +400,10 @@ body {
 .shopCard {
     position: relative;
     width: 88px;
-    height: 128px;
+    height: 144px;
     border: solid 4px #222222;
     border-radius: 12px;
-    padding: 4px 0px;
+    padding: 4px 4px;
     margin: 16px 8px;
     font-size: 12px;
     color: #111111;
@@ -166,14 +419,14 @@ body {
 
 .cardpileL {
     position: absolute;
-    top: 16px;
-    left: 32px;
+    top: -16px;
+    left: 0px;
     width: 88px;
-    height: 128px;
+    height: 144px;
     z-index: 10;
     border: none;
     border-radius: 8px;
-    padding: 4px 0px;
+    padding: 4px 4px;
     margin: 16px 8px;
     font-size: 21px;
     text-align: center;
@@ -189,13 +442,13 @@ body {
 
 .cardpileR {
     position: absolute;
-    top: 16px;
-    right: 32px;
+    top: -16px;
+    right: 0px;
     width: 88px;
-    height: 128px;
+    height: 144px;
     border: none;
     border-radius: 8px;
-    padding: 4px 0px;
+    padding: 4px 4px;
     margin: 16px 8px;
     font-size: 21px;
     display: flex;
@@ -285,7 +538,7 @@ body {
     width: 64px;
     border-radius: 24px;
     font-size: 16px;
-    background-color: #cc9900;
+    background-color: #aa6600;
 }
 .villainDamage1:hover {
     background-color: #eebb00;
@@ -299,9 +552,27 @@ body {
     width: 64px;
     border-radius: 24px;
     font-size: 16px;
-    background-color: #cc9900;
+    background-color: #aa6600;
 }
 .villainDamageMax:hover {
     background-color: #eebb00;
+    cursor: pointer;
+}
+
+
+
+
+.shopRerollButton {
+    visibility: hidden;
+    height: 40px;
+    border-radius: 20px;
+    font-size: 20px;
+    padding: 0px 16px;
+    color: #111111;
+    background-color: #bbbb44;
+    text-align: center;
+    z-index: 5;
+}
+.shopRerollButton:hover {
     cursor: pointer;
 }

@@ -14,7 +14,10 @@
       Like the title, which appears on the browser tab but not inside the page
       Further down you'll see the content that displays in the page
     -->
-    <title>Card Tower Defense</title>
+    <title>Card Game</title>
+
+    <!--The little icon next to the title-->
+    <link rel="icon" href="Images/SuperSpruce_32px.png" type="image/png" async>
 
     <!-- The website stylesheet -->
     <link rel="stylesheet" href="graphics.css" />
@@ -25,7 +28,9 @@
     <script src="player.js" defer></script>
     <script src="effect.js" defer></script>
     <script src="villain.js" defer></script>
+    <script src="prestige.js" defer></script>
     <script src="UI.js" defer></script>
+    <script src="UI_async.js" defer></script>
     <script src="init.js" defer></script>
   </head>
   <body>
@@ -36,13 +41,266 @@
     -->
     <div id="loadingScreen">
       <p id="loadingText">Loading...</p>
-      <button class ="startNewGameButton" id="startNewGameButton" onclick="softReset()">Start new game</button>
+      <button class ="startNewGameButton" id="startNewGameButton" onclick="softReset()">Start new game</button><br>
+      <button class ="prestigeAccessButton" id="prestigeAccessButton" onclick="prestigeTab()">Prestige upgrades</button><br>
       <p id="loadingText2"></p>
       <!-- You can add a loading animation or image here -->
     </div>
 
-    <div id="gameScreen">
-      <div class="playerstats">
+    <div id="prestigeScreen">
+      <div class="prestigeTabButtons" id="prestigeTabButtons">
+        <button class="prestigeTabButton" id="prestigeTabButton1" onclick="prestigeTab(1)">Player buffs</button>
+        <button class="prestigeTabButton" id="prestigeTabButton2" onclick="prestigeTab(2)">Turn buffs</button>
+        <button class="prestigeTabButton" id="prestigeTabButton3" onclick="prestigeTab(3)">Shop buffs</button>
+        <button class="prestigeTabButton" id="prestigeTabButton4" onclick="prestigeTab(4)">Villain nerfs</button>
+        <button class="prestigeTabButton" id="prestigeTabButton5" onclick="prestigeTab(5)">Softcap nerfs</button>
+        <button class="prestigeTabButton" id="prestigeTabButton6" onclick="prestigeTab(6)">Prestige currency boosts</button>
+        <button class="prestigeTabButton" id="prestigeTabButton7" onclick="prestigeTab(7)">Prestige currency exchange</button>
+        <button class="prestigeTabButton" id="prestigeTabButton8" onclick="prestigeTab(8)">Start New Game</button>
+      </div>
+      <div class="prestigeCurrenciesDisplay">
+        <div class="prestigeCurrencyDisplay" id="rubiesDisplay">Rubies: 00</div>
+        <div class="prestigeCurrencyDisplay" id="sapphiresDisplay">Sapphires: 00</div>
+        <div class="prestigeCurrencyDisplay" id="emeraldsDisplay">Emeralds: 00</div>
+      </div>
+      <div class="prestigeTabs" id="prestigeTabs">
+        <div class="prestigeTab" id="prestigeTab1">
+          <div class="upgrade" id="umh1" onclick="buy_mh1()">
+            Raise your max health by a flat amount.
+            <br><br>+<span id="emh1">00</span> to your max health
+            <br><br>Level <span id="lmh1">00</span>
+            <br><br>Cost: <span id="cmh1">00</span> rubies
+          </div>
+          <div class="upgrade" id="umh2" onclick="buy_mh2()">
+            Raise your max health based on your remaining lives.
+            <br><br>+<span id="emh2">00</span> to your max health per lost life
+            <br><br>Level <span id="lmh2">00</span>
+            <br><br>Cost: <span id="cmh2">00</span> rubies
+          </div>
+          <div class="upgrade" id="uml1" onclick="buy_ml1()">
+            Raise your max lives by a flat amount.
+            <br><br>+<span id="eml1">00</span> to your max lives
+            <br><br>Level <span id="lml1">00</span>
+            <br><br>Cost: <span id="cml1">00</span> rubies
+          </div>
+        </div>
+        <div class="prestigeTab" id="prestigeTab2">
+          <div class="upgrade" id="uic1" onclick="buy_ic1()">
+            Draw more cards at the start of your turn.
+            <br><br>+<span id="eic1">00</span> cards each turn
+            <br><br>Level <span id="lic1">00</span>
+            <br><br>Cost: <span id="cic1">00</span> emeralds
+          </div>
+          <div class="upgrade" id="ux11" onclick="buy_x11()">
+            Start with extra elixir on your first turn
+            <br><br>+<span id="ex11">00</span> elixir on your first turn
+            <br><br>Level <span id="lx11">00</span>
+            <br><br>Cost: <span id="cx11">00</span> emeralds
+          </div>
+          <div class="upgrade" id="um11" onclick="buy_m11()">
+            Start with extra money on your first turn
+            <br><br>+<span id="em11">00</span> money on your first turn
+            <br><br>Level <span id="lm11">00</span>
+            <br><br>Cost: <span id="cm11">00</span> emeralds
+          </div>
+          <div class="upgrade" id="ua11" onclick="buy_a11()">
+            Start with extra attack on your first turn
+            <br><br>+<span id="ea11">00</span> attack on your first turn
+            <br><br>Level <span id="la11">00</span>
+            <br><br>Cost: <span id="ca11">00</span> sapphires
+          </div>
+        </div>
+        <div class="prestigeTab" id="prestigeTab3">
+          <div class="upgrade" id="usb1" onclick="buy_sb1()">
+            Makes cards that you buy go in your hand instead of your discard,
+            <br><span id="esb1">00</span> times per game.<br>
+            <br><br>Level <span id="lsb1">00</span>
+            <br><br>Cost: <span id="csb1">00</span> emeralds
+          </div>
+          <div class="upgrade" id="usc1" onclick="buy_sc1()">
+            Raises the number of cards available to buy in the shop.
+            <br><br>+<span id="esc1">00</span> shop cards
+            <br><br>Level <span id="lsc1">00</span>
+            <br><br>Cost: <span id="csc1">00</span> emeralds
+          </div>
+          <div class="upgrade" id="urx1" onclick="buy_rx1()">
+            Allows the shop cards to be rerolled for elixir.
+            <br><br><span id="erx1"></span>
+            <br><br>Level <span id="lrx1">00</span>
+            <br><br>Cost: <span id="crx1">00</span> emeralds
+          </div>
+          <div class="upgrade" id="urm1" onclick="buy_rm1()">
+            Allows the shop cards to be rerolled for money.
+            <br><br><span id="erm1"></span>
+            <br><br>Level <span id="lrm1">00</span>
+            <br><br>Cost: <span id="crm1">00</span> emeralds
+          </div>
+          <div class="upgrade" id="usru" onclick="buy_sru()">
+            Unhooks the elixir and money costs of rerolling the shop.
+            <br><br><span id="esru"></span>
+            <br><br>Level <span id="lsru">00</span>
+            <br><br>Cost: <span id="csru">00</span> emeralds
+          </div>
+          <div class="upgrade" id="usrb" onclick="buy_srb()">
+            Lowers the base cost of rerolling the shop.
+            <br><br>Base shop reroll cost: <span id="esrb">00</span>
+            <br><br>Level <span id="lsrb">00</span>
+            <br><br>Cost: <span id="csrb">00</span> emeralds
+          </div>
+          <div class="upgrade" id="usrr" onclick="buy_srr()">
+            Lowers the shop reroll cost increase immediately after rerolling the shop.
+            <br><br>Cost increase: <span id="esrr">00</span>
+            <br><br>Level <span id="lsrr">00</span>
+            <br><br>Cost: <span id="csrr">00</span> emeralds
+          </div>
+          <div class="upgrade" id="usrd" onclick="buy_srd()">
+            Makes the shop reroll cost return to the base cost more quickly.
+            <br><br>Decay rate: <span id="esrd">00</span>%
+            <br><br>Level <span id="lsrd">00</span>
+            <br><br>Cost: <span id="csrd">00</span> emeralds
+          </div>
+        </div>
+        <div class="prestigeTab" id="prestigeTab4">
+          <div class="upgrade" id="uxv1" onclick="buy_xv1()">
+            Nerfs villain XP gain by 5% per level of this upgrade.
+            <br><br>x<span id="exv1">1.0</span> villain XP gain
+            <br><br>Level <span id="lxv1">00</span>
+            <br><br>Cost: <span id="cxv1">00</span> sapphires
+          </div>
+          <div class="upgrade" id="uxv2" onclick="buy_xv2()">
+            Nerfs villain XP gain by lowering the zone's influence on XP gain.
+            <br><br>Base zone power: <span id="exv2">1.50</span>
+            <br><br>Level <span id="lxv2">00</span>
+            <br><br>Cost: <span id="cxv2">00</span> sapphires
+          </div>
+          <div class="upgrade" id="ust1" onclick="buy_st1()">
+            Nerfs the KO penalty by making your lost money round down instead of up.
+            <br><br><span id="est1"></span>
+            <br><br>Level <span id="lst1">00</span>
+            <br><br>Cost: <span id="cst1">00</span> sapphires
+          </div>
+          <div class="upgrade" id="ust2" onclick="buy_st2()">
+            Nerfs the KO penalty by making your lost cards round down instead of up.
+            <br><br><span id="est2"></span>
+            <br><br>Level <span id="lst2">00</span>
+            <br><br>Cost: <span id="cst2">00</span> sapphires
+          </div>
+        </div>
+        <div class="prestigeTab" id="prestigeTab5">
+          <div class="upgrade" id="ucsa" onclick="buy_csa()">
+            Makes the card softcap less abrupt.
+            <br><br>Card softcap abruptness: <span id="ecsa">99</span>%
+            <br><br>Level <span id="lcsa">00</span>
+            <br><br>Cost: <span id="ccsa">00</span> emeralds
+          </div>
+          <div class="upgrade" id="ucsr" onclick="buy_csr()">
+            Raises the number of cards you draw before the card softcap appears.
+            <br><br>Cards drawn before softcap occurs: <span id="ecsr">ten</span>
+            <br><br>Level <span id="lcsr">00</span>
+            <br><br>Cost: <span id="ccsr">00</span> emeralds
+          </div>
+          <div class="upgrade" id="ucsx" onclick="buy_csx()">
+            Makes the card softcap less severe.
+            <br><br>Card softcap severity: <span id="ecsx">2.0</span>
+            <br><br>Level <span id="lcsx">00</span>
+            <br><br>Cost: <span id="ccsx">00</span> emeralds
+          </div>
+        </div>
+        <div class="prestigeTab" id="prestigeTab6">
+          <div class="upgrade" id="ugrs" onclick="buy_grs()">
+            Gain 25% more rubies (additive).
+            <br><br>Ruby gain is multiplied by <span id="egrs">1.0</span>.
+            <br><br>Level <span id="lgrs">00</span>
+            <br><br>Cost: <span id="cgrs">00</span> sapphires
+          </div>
+          <div class="upgrade" id="ugre" onclick="buy_gre()">
+            Gain 25% more rubies (additive).
+            <br><br>Ruby gain is multiplied by <span id="egre">1.0</span>.
+            <br><br>Level <span id="lgre">00</span>
+            <br><br>Cost: <span id="cgre">00</span> emeralds
+          </div>
+          <div class="upgrade" id="ugsr" onclick="buy_gsr()">
+            Gain 25% more sapphires (additive).
+            <br><br>Sapphire gain is multiplied by <span id="egsr">1.0</span>.
+            <br><br>Level <span id="lgsr">00</span>
+            <br><br>Cost: <span id="cgsr">00</span> rubies
+          </div>
+          <div class="upgrade" id="ugse" onclick="buy_gse()">
+            Gain 25% more sapphires (additive).
+            <br><br>Sapphire gain is multiplied by <span id="egse">1.0</span>.
+            <br><br>Level <span id="lgse">00</span>
+            <br><br>Cost: <span id="cgse">00</span> emeralds
+          </div>
+          <div class="upgrade" id="uger" onclick="buy_ger()">
+            Gain 25% more emeralds (additive).
+            <br><br>Emerald gain is multiplied by <span id="eger">1.0</span>.
+            <br><br>Level <span id="lger">00</span>
+            <br><br>Cost: <span id="cger">00</span> rubies
+          </div>
+          <div class="upgrade" id="uges" onclick="buy_ges()">
+            Gain 25% more emeralds (additive).
+            <br><br>Emerald gain is multiplied by <span id="eges">1.0</span>.
+            <br><br>Level <span id="lges">00</span>
+            <br><br>Cost: <span id="cges">00</span> sapphires
+          </div>
+        </div>
+        <div id="prestigeTab7"><br>
+          <div class="resourceSelection">
+            <div class="resourceSelection1">
+              <button id="exchangeFromRubies" class="rubySelect2 medium-button" onclick="selectCurrency(1,1)">Rubies</button><br>
+              <button id="exchangeFromSapphires" class="sapphireSelect2 medium-button" onclick="selectCurrency(2,1)">Sapphires</button><br>
+              <button id="exchangeFromEmeralds" class="emeraldSelect2 medium-button" onclick="selectCurrency(3,1)">Emeralds</button>
+            </div>
+            <div class="resourceSelection2">
+              5:1<br>
+              &rarr;
+            </div>
+            <div class="resourceSelection3">
+              <button id="exchangeToRubies" class="rubySelect2 medium-button" onclick="selectCurrency(1,2)">Rubies</button><br>
+              <button id="exchangeToSapphires" class="sapphireSelect2 medium-button" onclick="selectCurrency(2,2)">Sapphires</button><br>
+              <button id="exchangeToEmeralds"class="emeraldSelect2 medium-button" onclick="selectCurrency(3,2)">Emeralds</button>
+            </div>
+          </div>
+          <div class="proportionSelection">
+            <div class="proportionSelectionUnit" onclick="exchangePrestigeCurrencies(-5)">
+              <b>5</b><br><br>
+              <span id="exchange1">lol</span>
+            </div>
+            <div class="proportionSelectionUnit" onclick="exchangePrestigeCurrencies(0.01)">
+              <b>1%</b><br><br>
+              <span id="exchange2">lol</span>
+            </div>
+            <div class="proportionSelectionUnit" onclick="exchangePrestigeCurrencies(0.1)">
+              <b>10%</b><br><br>
+              <span id="exchange3">lol</span>
+            </div>
+            <div class="proportionSelectionUnit" onclick="exchangePrestigeCurrencies(0.5)">
+              <b>50%</b><br><br>
+              <span id="exchange4">lol</span>
+            </div>
+            <div class="proportionSelectionUnit" onclick="exchangePrestigeCurrencies(1)">
+              <b>100%</b><br><br>
+              <span id="exchange5">lol</span>
+            </div>
+          </div>
+        </div>
+        <div class="prestigeTab" id="prestigeTab8">
+          <button class ="startNewGameButton" id="startNewGameButton" onclick="softReset()">Start new game</button>
+          <div class="upgrade" id="uzsc">
+            Zone progression per turn is reduced, but start at a higher zone.
+            <br><br>Start at zone <span id="ezsc1" class="ezsc">00</span>.
+            <br>Turns per zone: <span id="ezsc2" class="ezsc">00</span>
+            <br><br><co class="font20">Level <span id="lzsc1" class="lzsc">00</span>/<span id="lzsc2" class="lzsc">00</span>&nbsp;&nbsp;&nbsp;</co>
+            <button class="small-button" id="bzsc" onclick="buy_zsc()">+1 Max Level</button>
+            <br><br>Cost: <span id="czsc1" class="czsc">00</span> rubies, and <span id="czsc2" class="czsc">00</span> sapphires
+            <br><br><input class="fullWidthSlider" id="izsc" type="range" min="0" max="0" value="0">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gameScreen" id="gameScreen">
+      <div class="playerallstats">
         <div class="cardpileL" id="playerDrawPile" onclick="p1.drawCards()">
           <br><div>Draw Pile</div>
           (<span id="playerAvailableCards">0</span>)
@@ -51,76 +309,90 @@
         <div class="cardpileR" id="playerDiscardPile">
           Discard Pile
         </div>
-        <div class="playerStatsLine">
-          <!--<div class="playerTitle">
-            Player 1
-          </div> -->
-          <div class="zoneCount">
-            Zone <span id="zoneText">0</span>
-          </div>
-          <div class="playerLives">
-            Lives: <span id="p1lives">00</span>
-          </div>
-          <div class="playerHealthBar">
-            <div class="playerHealthLevel" id="playerHealthLevel"></div>
-            <div class="playerHealthReadout">
-              <span id="playerCurrentHealth">5</span>/<span id="playerMaxHealth">10</span>
+        <div class="playermainstats">
+          <div class="playerStatsLine">
+            <!--<div class="playerTitle">
+              Player 1
+            </div> -->
+            <div class="turnCount">
+              Turn <span id="turnText">0</span>
+            </div>
+            <div class="zoneCount">
+              Zone <span id="zoneText">0</span>
+            </div>
+            <div class="playerLives">
+              Lives: <span id="p1lives">00</span>
+            </div>
+            <div class="playerHealthBar">
+              <div class="playerHealthLevel" id="playerHealthLevel"></div>
+              <div class="playerHealthReadout">
+                <span id="playerCurrentHealth">5</span>/<span id="playerMaxHealth">10</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="playerStatsLine">
-          <div class="playerstat">
-            Money: $<span id="p1money">0</span>  
+          <div class="playerStatsLine">
+            <div class="playerstat">
+              Money: $<span id="p1money">0</span>  
+            </div>
+            <div class="playerstat">
+              Elixir: <span id="p1elixir">0</span>  
+            </div>
+            <div class="playerstat">
+              Attack: <span id="p1attack">0</span>  
+            </div>
+            <div class="playerstat">
+              Score: <span id="p1score">000</span>  
+            </div>
           </div>
-          <div class="playerstat">
-            Elixir: <span id="p1elixir">0</span>  
+          <div class="playerStatsLine" id="playerstatus">
+            
           </div>
-          <div class="playerstat">
-            Attack: <span id="p1attack">0</span>  
-          </div>
-          <div class="playerstat">
-            Score: <span id="p1score">000</span>  
-          </div>
-        </div>
-        <div class="playerStatsLine" id="playerstatus">
-          <span id="playerStatusText">Draw your initial hand.</span>
+          <span class="playerStatusText" id="playerStatusText">Draw your initial hand.</span>
         </div>
       </div>
       
       <br>
-      <div class="cardhand" id="mainCardHand">
-        <!-- Cards that are drawn go here -->
-      </div>
-
-      <div class="villainSection" id="villainSection">
-        <!-- Villains go here
-        <div class="villain" id="villain0" vid="1">
-          <br>
-          <div class="villainName">
-            Placeholder
-          </div>
-          <br>
-          <div class="villainLevel">
-            Level <span id="villainLevel">0</span>
-          </div>
-          <div class="villainHealthBar" id="villainHealthBar">
-            <div class="villainHealthLevel" id="villainHealthLevel">
+      <div class="cardsAndVillains">
+        <div class="cardhand" id="mainCardHand">
+          <!-- Cards that are drawn go here -->
+        </div>
+  
+        <div class="villainSection" id="villainSection">
+          <!-- Villains go here
+          <div class="villain" id="villain0" vid="1">
+            <br>
+            <div class="villainName">
+              Placeholder
             </div>
-            <div class="villainHealthReadout" id="villainHealthReadout">
-              <span id="villainCurrentHealth">-1</span>
-              /
-              <span id="villainMaxHealth">0</span>
+            <br>
+            <div class="villainLevel">
+              Level <span id="villainLevel">0</span>
+            </div>
+            <div class="villainHealthBar" id="villainHealthBar">
+              <div class="villainHealthLevel" id="villainHealthLevel">
+              </div>
+              <div class="villainHealthReadout" id="villainHealthReadout">
+                <span id="villainCurrentHealth">-1</span>
+                /
+                <span id="villainMaxHealth">0</span>
+              </div>
             </div>
           </div>
         </div>
+      -->
       </div>
-    -->
+  
+      <div class="shopSection" id="cardShop">
+        <!-- Cards in the shop go here -->
+      </div>
+  
+      <button class="shopRerollButton" id="shopRerollButtonElixir" onclick="rerollShop(1)">
+        Reroll for <span id="shopRerollCostElixir">00</span> elixir
+      </button>
+      <button class="shopRerollButton" id="shopRerollButtonMoney" onclick="rerollShop(2)">
+        Reroll for <span id="shopRerollCostMoney">00</span> money
+      </button>
     </div>
 
-    <div class="shopSection" id="cardShop">
-      <!-- Cards in the shop go here -->
-    </div>
-
-
-    </body>
+  </body>
 </html>

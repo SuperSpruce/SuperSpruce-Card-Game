@@ -2,19 +2,20 @@ class Player {
     constructor(name1) {
         // Sets basic variables
         this._name = name1;
-        this._lives = 3;
-        this._maxLives = 3;
-        this._health = 10;
-        this._maxHealth = 10;
-        this._elixir = 0;
-        this._money = 0;
-        this._attack = 0;
+        this._maxLives = 3 + pr.ml1;
+        this._lives = this._maxLives;
+        this._maxHealth = 10 + pr.mh1 + Math.floor((this._maxLives - this._lives) * pr.mh2/2);
+        this._health = this._maxHealth;
+        this._elixir = pr.x11;
+        this._money = pr.m11;
+        this._attack = pr.a11;
         this._KOed = false;
-        this._initialCards = 5;
+        this._initialCards = 5 + 0.1*pr.ic1;
         this._cardsToDraw = 0;
         this._unnerfedCardsToDraw = 0;
         this._cardsDrawnThisTurn = 0;
         this._effectiveCardsDrawnThisTurn = 0;
+        this._shopCardsPlacedInHand = 0;
         this._attackStage = 0;
         this._defenseStage = 0;
         this._specialDefenseStage = 0;
@@ -37,7 +38,7 @@ class Player {
         // Sets up health and UI stuff
         document.getElementById("p1score").innerHTML = this._score;
         document.getElementById("p1lives").innerHTML = this._lives;
-        setPlayerHealthLevel(100*this._health/this._maxHealth);
+        setPlayerHealthLevel(this._health, this._maxHealth);
         document.getElementById("playerAvailableCards").innerHTML = this._initialCards;
         // Sets the draw pile to draw cards upon click.
         // Use an arrow function to retain the outer `this` context
@@ -66,6 +67,7 @@ class Player {
             _unnerfedCardsToDraw: this._unnerfedCardsToDraw,
             _cardsDrawnThisTurn: this._cardsDrawnThisTurn,
             _effectiveCardsDrawnThisTurn: this._effectiveCardsDrawnThisTurn,
+            _shopCardsPlacedInHand: this._shopCardsPlacedInHand,
             _villainsKOed: this._villainsKOed,
             _villainsKOedThisTurn: this._villainsKOedThisTurn,
             _KOed: this._KOed,
@@ -96,6 +98,7 @@ class Player {
         player._unnerfedCardsToDraw = json._unnerfedCardsToDraw;
         player._cardsDrawnThisTurn = json._cardsDrawnThisTurn;
         player._effectiveCardsDrawnThisTurn = json._effectiveCardsDrawnThisTurn;
+        player._shopCardsPlacedInHand = json._shopCardsPlacedInHand != null ? json._shopCardsPlacedInHand : 0;
         player._villainsKOed = json._villainsKOed;
         player._villainsKOedThisTurn = json._villainsKOedThisTurn;
         player._KOed = json._KOed;
@@ -121,7 +124,7 @@ class Player {
             return;
         }
         else if(this._turnState == 0) {
-            numCards = this._initialCards;
+            numCards = stochasticRound(this._initialCards);
             this._cardsToDraw = numCards;
             this.initialHandDraw();
         }
@@ -138,24 +141,41 @@ class Player {
             this._cardsDrawnThisTurn++;
             this._effectiveCardsDrawnThisTurn++;
             this._cardsToDraw--;
+            this._unnerfedCardsToDraw--;
         }
         document.getElementById("playerAvailableCards").innerHTML = 0;
+        save();
     }
 
     playCard(cardHTMLidNum, optionn = 0) {
+        
         // Gets the HTML card
         let card = document.getElementById("card" + cardHTMLidNum);
         let id = card.getAttribute("cid");
 
         // Checks for multiple effects
         let FX = getFXfromStr(cards[id][6]);
-
+        
         // Displays choices to the user
         let choice = 0;
         if(this._turnState == -1) {
             // Time for the Villains to attack!
-            Villain.allAttack();
-            this._turnState = 1;
+            let line4 = document.getElementById("playerStatusText");
+            line4.innerHTML = "You must let the villains attack before playing a card.  ";
+            let button = document.createElement("button");
+            button.style.height = "32px";
+            button.style.borderRadius = "16px";
+            button.style.fontSize = "20px";
+            button.style.margin = "0px 8px";
+            button.style.color = "#eeeeee";
+            button.style.backgroundColor = "#551111";
+            button.style.zIndex = "5";
+            button.textContent = "Resolve Villain Attacks"
+            // Set the function for the button
+            button.onclick = function() {
+                Villain.allAttack();
+            };
+            line4.appendChild(button);
             return;
         }
         else if(this._turnState == 2 || this._turnState == 6) {
@@ -198,7 +218,7 @@ class Player {
                 line3.appendChild(button);
             }
         }
-
+        
         // Checks if the turn state is 1
         // If the state was 2 when clicking on a card, the choice will be -1 and this will not run
         if(this._turnState == 1 && choice >= 0) {
@@ -269,6 +289,7 @@ class Player {
         this._turnState = 0;
         document.getElementById("playerAvailableCards").innerHTML = this._initialCards;
         document.getElementById("playerStatusText").innerHTML += "<br>Draw your initial hand.";
+        document.getElementById("cardSoftcap").innerHTML = "";
         
         // Saves the game
         save();
@@ -279,7 +300,7 @@ class Player {
         // Sets up a new turn
         if(this._KOed) {
             this._health = this._maxHealth;
-            setPlayerHealthLevel(100);
+            setPlayerHealthLevel(this._health, this._maxHealth);
             this._KOed = false;
         }
         turnNum++;
@@ -287,13 +308,13 @@ class Player {
         this._score += 10*this._elixir;
         this._score += 5*zone;
         let prevZone = zone;
-        zone = 1 + Math.floor(turnNum/6);
+        zone = 1 + pr.zsc + Math.floor(turnNum/Math.sqrt(36+12*pr.zsc));
         // Check if new villain appears
         let r;
         if((prevZone < zone) && (zone == 5 || zone == 10 || zone == 25 || zone == 50)) {
             do {
                 r = Math.ceil(Math.random() * (villainDex.length-1));
-            } while (villainDex[r][7] > zone);
+            } while ((villainDex[r][7] > zone) || (villainDex[r][8] < zone));
             createVillainSlot(villainList.length, new Villain(r, 0));
         }
         // Villains will gain XP
@@ -301,49 +322,68 @@ class Player {
             Villain.gainXP(i);
         }
 
+        // Lowers the shop reroll costs
+        shop.rerollCostElixir = 6 - pr.srb + (pr.srb-6 + shop.rerollCostElixir) * (2/3*Math.pow(0.9, pr.srd));
+        shop.rerollCostMoney = 6 - pr.srb + (pr.srb-6 + shop.rerollCostMoney) * (2/3*Math.pow(0.9, pr.srd));
+        document.getElementById("shopRerollCostElixir").innerHTML = Math.round(shop.rerollCostElixir);
+        document.getElementById("shopRerollCostMoney").innerHTML = Math.round(shop.rerollCostMoney);
+
         fieldEffects = [];
-        this._elixir = 0;
-        this._attack = 0;
+        this._elixir = turnNum == 1 ? pr.x11 : 0;
+        this._attack = turnNum == 1 ? pr.a11 : 0;
+        this._money = turnNum == 1 ? pr.m11 : this._money;
         this._attackStage = 0;
         this._defenseStage = 0;
-        this._unnerfedCardsToDraw = 0;
+        this._unnerfedCardsToDraw = this._cardsToDraw;
         this._villainsKOedThisTurn = 0;
         this._cardsDrawnThisTurn = 0;
         this._effectiveCardsDrawnThisTurn = 0;
         this._specialDefenseStage = 0;
+        changeZoneLevelColor();
+        changeShopCardColors();
+        document.getElementById("turnText").innerHTML = turnNum;
         document.getElementById("zoneText").innerHTML = zone;
-        document.getElementById("cardSoftcap").innerHTML = "";
         document.getElementById("p1score").innerHTML = this._score;
         document.getElementById("p1elixir").innerHTML = this._elixir;
         document.getElementById("p1attack").innerHTML = this._attack;
-        document.getElementById("playerStatusText").innerHTML = "Play a card, but the villains will attack first.";
-        save();
+        document.getElementById("p1attack").innerHTML = this._money;
+        let line4 = document.getElementById("playerStatusText");
+        line4.innerHTML = "Villains attack!  ";
+        let button = document.createElement("button");
+        button.style.height = "32px";
+        button.style.borderRadius = "16px";
+        button.style.fontSize = "20px";
+        button.style.margin = "0px 8px";
+        button.style.color = "#eeeeee";
+        button.style.backgroundColor = "#551111";
+        button.style.zIndex = "5";
+        button.textContent = "Resolve Villain Attacks"
+        // Set the function for the button
+        button.onclick = function() {
+            Villain.allAttack();
+        };
+        line4.appendChild(button);
     }
 
 
 
     // When you attack the villain
-    attackVillain(villainNum, magnitude) {
+    attackVillain(villainNum, magnitude, mode=0) {
+        let intensity;
         if(magnitude < 0) { // Here, the villain actually being healed.
             villainList[villainNum].currentHealth -= magnitude;
             if(villainList[villainNum].currentHealth > villainList[villainNum].maxHealth) {
                 villainList[villainNum].currentHealth = villainList[villainNum].maxHealth;
             }
             setVillainHealthBar(villainNum, villainList[villainNum]);
+            return;
         }
-        else if(this._attack > 0) {
+        else if(this._attack > 0 && mode == 0) {
+            // You spend your attack
             this._attack -= magnitude;
             magnitude *= 3/(3-p1._attackStage);
             // First, round non-integer intensity values
-            let intensity = Math.trunc(magnitude); // Rounds towards zero
-            let intensityDecimal = Math.abs(magnitude - intensity);
-            if(intensity >= 0 && intensityDecimal != 0) { // Stochastic rounding of non-integer intensity
-                let rand = Math.random();
-                if(rand < intensityDecimal)
-                    intensity = Math.ceil(magnitude);
-                else
-                    intensity = Math.floor(magnitude);
-            }
+            intensity = stochasticRound(magnitude);
 
             // Check for highest attack priority. The villain with the highest priority is attacked.
             let highestPriority = villainList[villainNum].attackPriority;
@@ -352,44 +392,42 @@ class Player {
                     villainNum = i;
                 }
             }
-            console.log("Attacking " + villainList[villainNum].title);
+        }
+        else if(mode == 1) { // villain attacks itself here
+            intensity = stochasticRound(magnitude);
+        }
+        else { 
+            return;
+        }
 
-            if(intensity < villainList[villainNum].currentHealth) { // You DON'T KO the villain here
-                this._damageDealt += intensity;
-                villainList[villainNum].currentHealth -= intensity;
-                setVillainHealthBar(villainNum, villainList[villainNum]);
-                document.getElementById("p1attack").innerHTML = this._attack;
-            }
-            else { // You DO KO the villain here. Things are A LOT more complicated.
+        if(intensity < villainList[villainNum].currentHealth) { // You DON'T KO the villain here
+            this._damageDealt += intensity;
+            villainList[villainNum].currentHealth -= intensity;
+            setVillainHealthBar(villainNum, villainList[villainNum]);
+            document.getElementById("p1attack").innerHTML = this._attack;
+        }
+        else { // You DO KO the villain here. Things are A LOT more complicated.
+            if(mode == 0) {
                 let spareIntensity = intensity - villainList[villainNum].currentHealth;
                 spareIntensity *= (3-p1._attackStage)/3;
                 // First, round non-integer intensity values and recover lost attack
-                let intensity2 = Math.trunc(spareIntensity); // Rounds towards zero
-                let intensityDecimal2 = Math.abs(spareIntensity - intensity2);
-                if(intensity2 >= 0 && intensityDecimal2 != 0) {
-                    let rand2 = Math.random();
-                    console.log(spareIntensity + " " + rand2);
-                    if(rand2 < intensityDecimal2)
-                        intensity2 = Math.ceil(spareIntensity);
-                    else
-                        intensity2 = Math.floor(spareIntensity);
-                }
+                let intensity2 = stochasticRound(spareIntensity);
                 this._attack += intensity2;
                 this._damageDealt += villainList[villainNum].currentHealth;
-
-                // Now, actually KO the villain
-                villainList[villainNum].currentHealth = 0;
-                setVillainHealthBar(villainNum, villainList[villainNum]);
-                document.getElementById("p1attack").innerHTML = this._attack;
                 this._score += 10*villainList[villainNum].maxHealth;
-                document.getElementById("p1score").innerHTML = this._score;
-                if(villainList[villainNum].resolveReward(villainNum, -1) != "STOP") {
-                    p1.KOVillain(villainNum);
-                }
             }
-        }
-        else { // This is when the villain is actually healing itself
+            if(mode == 1) {
+                this._score += villainList[villainNum].currentHealth;
+            }
 
+            // Now, actually KO the villain
+            villainList[villainNum].currentHealth = 0;
+            setVillainHealthBar(villainNum, villainList[villainNum]);
+            document.getElementById("p1attack").innerHTML = this._attack;
+            document.getElementById("p1score").innerHTML = this._score;
+            if(villainList[villainNum].resolveReward(villainNum, -1) != "STOP") {
+                p1.KOVillain(villainNum);
+            }
         }
     }
 
@@ -429,8 +467,8 @@ class Player {
         let r;
         do {
             r = Math.ceil(Math.random() * (villainDex.length-1));
-        } while (villainDex[r][7] > zone);
-        let startingXP = 10*zone*zone-10;
+        } while ((villainDex[r][7] > zone) || (villainDex[r][8] < zone));
+        let startingXP = 4 * Villain.setXPScalingFactor() * Math.pow(0.95, pr.xv1) * (Math.pow(zone, 2+0.005*zone-0.05*pr.xv2)-1);
         if(zone >= 15) startingXP *= 2;
         createVillainSlot(villainNum, new Villain(r, startingXP));
     }
@@ -442,6 +480,7 @@ class Player {
         // Lose a life and check for game over
         this._lives--;
         document.getElementById("p1lives").innerHTML = this._lives;
+        changeLivesColor(p1);
         if(this._lives <= 0) {
             document.getElementById("playerStatusText").innerHTML = "GAME OVER";
             this.gameOver();
@@ -456,21 +495,30 @@ class Player {
                     this.applyEffects(this._deck.hand[i], [4]);
                 }
             }
-            const discarding = new Effect(60, Math.ceil(cardsInHand/2), 0, 4);
+            let discarding;
+            if(pr.st2)
+                discarding = new Effect(60, Math.floor(cardsInHand/2), 0, 4);
+            else
+                discarding = new Effect(60, Math.ceil(cardsInHand/2), 0, 4);
             discarding.apply(4);
 
+            // Raise your max health based on the mh2 prestige upgrade
+            this._maxHealth = 10 + pr.mh1 + Math.floor((this._maxLives - this._lives) * pr.mh2/2);
             this._elixir = 0;
             this._attack = 0;
             this._cardsToDraw = 0;
             this._unnerfedCardsToDraw = 0;
             let moneyLost = Math.ceil(this._money/2);
+            if(pr.st1)
+                moneyLost = Math.floor(this._money/2);
             this._money -= moneyLost;
             this._KOed = true;
+            changeShopCardColors();
             document.getElementById("p1elixir").innerHTML = p1._elixir;
             document.getElementById("p1attack").innerHTML = p1._attack;
             document.getElementById("p1money").innerHTML = p1._money;
             document.getElementById("playerAvailableCards").innerHTML = this._cardsToDraw;
-            let KOstring = "<br>You got KOed! You lost all your elixir and attack, " + Math.ceil(cardsInHand/2) + " cards, and $" + moneyLost + ".";
+            let KOstring = "<br>You got KOed! You lost all your elixir and attack, " + Math.ceil(cardsInHand/2) + " cards, and $" + moneyLost + ".<br>";
             return KOstring;
         }
     }
@@ -502,17 +550,31 @@ class Player {
         }
         this._money = 0;
         this.gameOverUI(place);
-        save();
     }
 
 
     gameOverUI(place) {
         // Repurposes the loading screen as a game over screen and displays a bunch of stats
         //document.getElementById("loadingScreen").removeChild("StartNewGame");
+        let rubiesGained = (turnNum-1) / 12.5 * Math.pow((turnNum+1)/9, 2.25);
+        let sapphiresGained = (Math.pow(p1._villainsKOed, 2) + Math.pow(p1._damageDealt/4, 1.75) + Math.pow(p1._totalAttack/5, 1.75)) / 3.75;
+        let emeraldsGained = (1/10*Math.pow(p1._deck.size()-10, 2.3) + 1/300*Math.pow(p1._totalElixir, 2.3) + 1/150*Math.pow(p1._totalMoney, 2.3)) / 4;
+        rubiesGained = Math.round(rubiesGained * (1+0.25*pr.grs) * (1+0.25*pr.gre));
+        sapphiresGained = Math.round(sapphiresGained * (1+0.25*pr.gsr) * (1+0.25*pr.gse));
+        emeraldsGained = Math.round(emeraldsGained * (1+0.25*pr.ger) * (1+0.25*pr.ges));
+        if(place != -1) {
+            pr.r += rubiesGained;
+            pr.s += sapphiresGained;
+            pr.e += emeraldsGained;
+        }
         document.getElementById("gameScreen").style.display = "none";
         document.getElementById("loadingScreen").style.display = "block";
         document.getElementById("loadingText").innerHTML = "GAME OVER!<br><br>";
-        document.getElementById("startNewGameButton").style.display = "block";
+        document.getElementById("prestigeAccessButton").style.visibility = "visible";
+        let startNewGameButtons = document.getElementsByClassName("startNewGameButton");
+        for(let i=0; i<startNewGameButtons.length; i++) {
+            startNewGameButtons[i].style.visibility = "visible";
+        }
         let stats = document.getElementById("loadingText2");
         stats.innerHTML = "<br>Score: <b>" + this._score + "</b>"; 
         stats.innerHTML += "<br><br>Turns survived: " + (turnNum-1) + "<br>Highest Zone: " + zone + "<br>Villains KOed: " + this._villainsKOed;
@@ -521,6 +583,10 @@ class Player {
         stats.innerHTML += "<br>Total attack gained: " + this._totalAttack;
         stats.innerHTML += "<br>Total damage dealt: " + this._damageDealt;
         stats.innerHTML += "<br>Final deck size: " + this._deck.size();
+        stats.innerHTML += "<br>";
+        stats.innerHTML += "<br>Rubies gained: " + rubiesGained;
+        stats.innerHTML += "<br>Sapphires gained: " + sapphiresGained;
+        stats.innerHTML += "<br>Emeralds gained: " + emeraldsGained;
         stats.innerHTML += "<br><br>Highscores:";
         for(let i=0; i<5; i++) {
             if(i == place) 
@@ -528,6 +594,7 @@ class Player {
             else 
                 stats.innerHTML += "<br>" + highscores[i];
         }
+        save();
     }
 
 
@@ -565,6 +632,17 @@ function getDecimalPart(number) {
         // If there is no decimal part, return 0
         return 0;
     }
+}
+
+function stochasticRound(number) {
+    const roundedDown = Math.trunc(number);
+    const decimalPart = getDecimalPart(number);
+    if(number > 0 && Math.random() < decimalPart)
+        return roundedDown + 1;
+    else if(number < 0 && Math.random() < decimalPart)
+        return roundedDown - 1;
+    else
+        return roundedDown;
 }
 
 function removeButtonsFromStatusLine() {

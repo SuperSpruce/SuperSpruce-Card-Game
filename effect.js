@@ -66,6 +66,7 @@ class Effect {
                     document.getElementById("p1score").innerHTML = p1._score;
                     document.getElementById("p1elixir").innerHTML = p1._elixir;
                     effectString += " elixir!";
+                    changeShopCardColors();
                     break;
                 case 2: //money
                     p1._money += intensity;
@@ -74,6 +75,7 @@ class Effect {
                     document.getElementById("p1score").innerHTML = p1._score;
                     document.getElementById("p1money").innerHTML = p1._money;
                     effectString += " money!";
+                    changeShopCardColors();
                     break;
                 case 3: //attack
                     p1._attack += intensity;
@@ -98,18 +100,25 @@ class Effect {
                     }
                     else if(p1._KOed)
                         p1._health = 0;
-                    setPlayerHealthLevel(100 * p1._health / p1._maxHealth);
+                    setPlayerHealthLevel(p1._health, p1._maxHealth);
                     break;
                 case 6: //cards
                     // Add nerf to too many cards drawn to prevent infinite turns
                     p1._unnerfedCardsToDraw += intensity;
-                    let cardsThisTurn = p1._initialCards + p1._unnerfedCardsToDraw;
-                    let nerfedCTD = Math.min(cardsThisTurn, Math.sqrt(10*cardsThisTurn));
-                    if(nerfedCTD == cardsThisTurn)
+                    let cardsThisTurn = p1._cardsDrawnThisTurn + p1._unnerfedCardsToDraw;
+                    let a = (0.5+0.5*(1-Math.pow(0.95,pr.csx))); // Softcap power
+                    let b = 10 + pr.csr; // Softcap threshold
+                    let c = 0.2*pr.csa;  // Softcap abruptness
+                    let d = Math.pow((cardsThisTurn - c*b*(1-Math.pow(a, 1/(1-a)))), a) * Math.pow(b, 1-a)  -  c*b*(Math.pow(a, 1/(1-a))-1);
+                    let softcapCTT = d - (Math.pow((b - c*b*(1-Math.pow(a, 1/(1-a)))), a) * Math.pow(b, 1-a) - c*b*(Math.pow(a, 1/(1-a))-1) - Math.pow(b,a)*Math.pow(b, 1-a));
+                    let nerfedCTT = cardsThisTurn > b ? softcapCTT : cardsThisTurn;
+                    console.log("Original effect: " + intensity + ", Cards drawn this turn: " + p1._cardsDrawnThisTurn + ", Unnerfed CTD: " + p1._unnerfedCardsToDraw + ", Total cards this turn: " + cardsThisTurn + ", Nerfed CTD: " + nerfedCTT);
+                    console.log("x-value: " + cardsThisTurn + ", Purple curve: " + d + ", Black curve: " + softcapCTT);
+                    if(nerfedCTT == cardsThisTurn)
                         document.getElementById("cardSoftcap").innerHTML = "";
                     else
                         document.getElementById("cardSoftcap").innerHTML = "(softcapped)";
-                    p1._cardsToDraw = (nerfedCTD - p1._cardsDrawnThisTurn);
+                    p1._cardsToDraw = (nerfedCTT - p1._cardsDrawnThisTurn);
                     document.getElementById("playerAvailableCards").innerHTML = Math.floor(p1._cardsToDraw);
                     // Fix the bug where getting this effect at the end of turn nullifies the effect
                     if(Math.floor(p1._cardsToDraw) > 0 && p1._turnState == 0) {
@@ -127,11 +136,36 @@ class Effect {
                     break;
                 case 14: // heal this villain
                     effectString += " health to the " + villainList[villainPos].title + "!";
-                    p1.attackVillain(villainPos, -1*intensity);
+                    p1.attackVillain(villainPos, -1*intensity, 1);
+                    break;
+                case 15: // heal all villains
+                    effectString += " health to all villains!";
+                    for(let i=1; i<villainList.length; i++) {
+                        p1.attackVillain(i, -1*intensity, 1);
+                    }
                     break;
                 case 16: // +1 attack priority to the villain
                     villainList[villainPos].attackPriority += intensity;
                     effectString += " attack priority to the " + villainList[villainPos].title + "!";
+                    break;
+                case 18: // health per hitpoint of villain
+                    let numHits = villainList[villainPos].currentHealth;
+                    effectString = effectString.substring(0, effectString.length - String(intensity).length);
+                    effectString += ((this.intensity).toFixed(2) + "x" + Math.sqrt(numHits).toFixed(2) + " health!");
+                    p1._health += stochasticRound(this.intensity * Math.sqrt(numHits));
+                    if(p1._health > p1._maxHealth) {
+                        p1._score += 20*(p1._health - p1._maxHealth);
+                        document.getElementById("p1score").innerHTML = p1._score;
+                        p1._health = p1._maxHealth;
+                    }
+                    else if(p1._health <= 0) {
+                        p1._health = 0;
+                        if(!p1._KOed)
+                            KOstring = p1.stun();
+                    }
+                    else if(p1._KOed)
+                        p1._health = 0;
+                    setPlayerHealthLevel(p1._health, p1._maxHealth);
                     break;
                 case 60: //random discarding of a card
                     effectString += " random cards are discarded from your hand...";
@@ -155,7 +189,7 @@ class Effect {
                     }
                     break;
             }
-            effectString += "  " + KOstring;
+            effectString += "  " + KOstring + "  ";
         }
         return effectString;
     }
@@ -217,8 +251,18 @@ Types:
     15: Heal all villains
     16: Forces all attack on this villain
     17: Negates all attack on this villain (can still attack other villains)
+    18: Health per sqrt(hitpoint) of villain
     60: Randomly discarded cards from hand
     61: Cards discarded by your choice
+    Positive values are discarded randomly, negative values are discarded with your choice
+    62: Highest value cards discarded from hand
+    63: Lowest value cards discarded from hand
+    64: Card with a value of 0 discarded from hand
+    65: Card with a value of 1-5 discarded from hand
+    69: This card discarded
+    71-79: Same as 61-69 except with banish instead of discard
+
+    OLD:
     62: Highest rank cards randomly discarded from hand
     63: Lowest rank cards randomly discarded from hand 
     64: Highest value cards randomly discarded from hand
@@ -261,7 +305,8 @@ Triggers:
         10: When something is removed from the location
         11: When forcibly discarding this card (closes the "discard loophole")
         12: When forcibly discaring any card
-        13: When using this card to KO a villian
+        13: When using this card to KO a villain
+        14: Innate - Happens before villains attack.
         21: When card of normal type is played
                     */
 
