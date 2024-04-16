@@ -346,7 +346,7 @@ class Player {
         document.getElementById("p1score").innerHTML = this._score;
         document.getElementById("p1elixir").innerHTML = this._elixir;
         document.getElementById("p1attack").innerHTML = this._attack;
-        document.getElementById("p1attack").innerHTML = this._money;
+        document.getElementById("p1money").innerHTML = this._money;
         let line4 = document.getElementById("playerStatusText");
         line4.innerHTML = "Villains attack!  ";
         let button = document.createElement("button");
