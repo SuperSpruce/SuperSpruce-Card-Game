@@ -204,6 +204,7 @@ function updateEverything() {
     }
     flashAttackButtons();
     flashDrawPile();
+    advanceZoneMusic();
 }
 
 
