@@ -45,7 +45,7 @@ body {
 
 .bottomRight {
     position: fixed;
-    z-index: 900;
+    z-index: 1100;
     bottom: 1%;
     right: 1%;
 }
