@@ -21,7 +21,8 @@ function advanceZoneMusic(advance = false) {
     // Check if music.current is already set
     if (!music.current || !advance) {
         // No music loaded, set current and next zones
-        music.currentZone = zone > 35 ? 35 : zone + 1;
+        music.order = true;
+        music.currentZone = zone > 35 ? 35 : zone;
         music.current = document.createElement('audio');
         music.current.src = 'Audio/Zone ' + music.currentZone + '.mp3';
         music.current.loop = true;
