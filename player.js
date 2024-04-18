@@ -311,11 +311,14 @@ class Player {
         zone = 1 + pr.zsc + Math.floor(turnNum/Math.sqrt(36+12*pr.zsc));
         // Check if new villain appears
         let r;
-        if((prevZone < zone) && (zone == 5 || zone == 10 || zone == 25 || zone == 50)) {
-            do {
-                r = Math.ceil(Math.random() * (villainDex.length-1));
-            } while ((villainDex[r][7] > zone) || (villainDex[r][8] < zone));
-            createVillainSlot(villainList.length, new Villain(r, 0));
+        if(prevZone < zone) {
+            advanceZoneMusic(true);
+            if(zone == 5 || zone == 10 || zone == 25 || zone == 50) {
+                do {
+                    r = Math.ceil(Math.random() * (villainDex.length-1));
+                } while ((villainDex[r][7] > zone) || (villainDex[r][8] < zone));
+                createVillainSlot(villainList.length, new Villain(r, 0));
+            }
         }
         // Villains will gain XP
         for(let i=1; i<villainList.length; i++) {

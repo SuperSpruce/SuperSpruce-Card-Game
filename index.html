@@ -31,6 +31,7 @@
     <script src="prestige.js" defer></script>
     <script src="UI.js" defer></script>
     <script src="UI_async.js" defer></script>
+    <script src="music.js" defer></script>
     <script src="init.js" defer></script>
   </head>
   <body>
@@ -39,6 +40,8 @@
       Each element is defined using tags, like this <div></div>
       The attributes like class="wrapper" let us style elements in the CSS
     -->
+    <button class="bottomRight" id="musicToggle" onclick="toggleMusic()">Toggle music</button>
+
     <div id="loadingScreen">
       <p id="loadingText">Loading...</p>
       <button class ="startNewGameButton" id="startNewGameButton" onclick="softReset()">Start new game</button><br>

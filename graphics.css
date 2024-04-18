@@ -43,6 +43,14 @@ body {
 }
 
 
+.bottomRight {
+    position: fixed;
+    z-index: 900;
+    bottom: 1%;
+    right: 1%;
+}
+
+
 
 #loadingScreen {
     position: fixed;
