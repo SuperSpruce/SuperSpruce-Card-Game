@@ -372,6 +372,9 @@ class Player {
 
     // When you attack the villain
     attackVillain(villainNum, magnitude, mode=0) {
+        if(this._turnState == 3) {
+            return;
+        }
         let intensity;
         if(magnitude < 0) { // Here, the villain actually being healed.
             villainList[villainNum].currentHealth -= magnitude;

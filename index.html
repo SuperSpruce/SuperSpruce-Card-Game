@@ -40,7 +40,18 @@
       Each element is defined using tags, like this <div></div>
       The attributes like class="wrapper" let us style elements in the CSS
     -->
-    <button class="bottomRight" id="musicToggle" onclick="toggleMusic()">Toggle music</button>
+    <div class="bottomRight">
+      <button id="musicToggle" onclick="showImportWindow()">Import save</button><br>
+      <button id="musicToggle" onclick="exportSave()">Export save</button><br>
+      <button id="musicToggle" onclick="toggleMusic()">Toggle music</button>
+    </div>
+
+    <div class="importWindow" id="importWindow">
+      <br><label for="saveImport">Enter Save:</label>
+      <br><input type="text" id="saveImport"><br>
+      <br><button class="medium-button" onclick="importSave()">&nbsp;Import Save&nbsp;</button>
+      <button class="large-button X-out" onclick="closeImportWindow()">X</button>
+    </div>
 
     <div id="loadingScreen">
       <p id="loadingText">Loading...</p>
