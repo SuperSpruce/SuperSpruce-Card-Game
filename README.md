@@ -10,3 +10,5 @@ See if you can beat my highscore of 22,960, or live for 100 turns!
 - 1.1 (4-14-2024): The Prestige Update! Introduced prestige mechanics, 29 prestige upgrades, 3 new cards, 3 new villains, and 7 new moves.
 - 1.1.1 (4-15-2024): Fixed a bug where your money showed as your attack at the start of a turn.
 - 1.1.2 (4-17-2024): The Music Update! No new mechanics, just music that gradually gets more intense the higher zone you reach. 
+- 1.1.3 (4-20-2024): Small bugfixes. Now the correct music plays based on the zone.
+- 1.1.4 (4-25-2024): Added importing/exporting of saves.
