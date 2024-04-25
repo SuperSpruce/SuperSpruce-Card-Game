@@ -29,6 +29,9 @@ body {
     padding: 0px 16px;
     text-align: center;
 }
+.medium-button:hover {
+    cursor: pointer;
+}
 .large-button {
     height: 64px;
     border-radius: 32px;
@@ -38,16 +41,46 @@ body {
 }
 
 
+.X-out {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: #dd6666;
+}
+.X-out:hover {
+    background-color: #ee8888;
+    cursor: pointer;
+}
+
 .fullWidthSlider {
     width: 100%;
 }
 
 
 .bottomRight {
+    display: block;
     position: fixed;
     z-index: 1100;
     bottom: 1%;
     right: 1%;
+    line-height: 150%;
+    text-align: right;
+}
+
+
+
+.importWindow {
+    display: block;
+    visibility: hidden;
+    position: fixed;
+    z-index: 1100;
+    bottom: 2%;
+    right: 160px;
+    line-height: 150%;
+    border: solid 4px #444488;
+    border-radius: 32px;
+    padding: 32px;
+    background-color: #444444;
 }
 
 

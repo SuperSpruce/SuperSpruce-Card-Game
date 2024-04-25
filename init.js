@@ -269,6 +269,53 @@ function hardReset() {
 }
 
 
+
+function copyTextToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => {
+        alert('Save successfully exported to clipboard!');
+        })
+        .catch((error) => {
+        console.error('Unable to export save to clipboard: ', error);
+        });
+}
+
+function exportSave() {
+    // Gets the game state
+    const gameStateJSON = localStorage.getItem('gameState');
+    copyTextToClipboard(gameStateJSON);
+}
+
+function showImportWindow() {
+    document.getElementById("importWindow").style.visibility = "visible";
+}
+function closeImportWindow() {
+    document.getElementById("importWindow").style.visibility = "hidden";
+}
+
+function importSave() {
+    const textInput = document.getElementById('saveImport');
+    let save = textInput.value.trim();
+    
+    if (save && save.substring(0,1) == "{") {
+        let confirmation = confirm("WARNING! If you click 'OK', your save will be overwritten! Are you sure you want to do this?");
+        if(!confirmation)
+            return;
+
+        localStorage.gameState = save;
+        load();
+        alert("Save successfully imported!");
+        closeImportWindow();
+    } 
+    else if(save) {
+        alert('Error! Invalid save!');
+    }
+    else {
+        alert('Please paste your savefile before importing the save.');
+    }
+  }
+
+
 // Loads the game
 load();
 
